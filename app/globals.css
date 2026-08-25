@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ivoclar Uniform Pro — files in /public/fonts (UniformPro-*.woff2|woff) */
+@font-face {
+  font-family: 'Uniform Pro';
+  src: url('/fonts/UniformPro-Lgt.woff2') format('woff2'),
+    url('/fonts/UniformPro-Lgt.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Uniform Pro';
+  src: url('/fonts/UniformPro-LgtIt.woff2') format('woff2'),
+    url('/fonts/UniformPro-LgtIt.woff') format('woff');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Uniform Pro';
+  src: url('/fonts/UniformPro-Reg.woff2') format('woff2'),
+    url('/fonts/UniformPro-Reg.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Uniform Pro';
+  src: url('/fonts/UniformPro-RegIt.woff2') format('woff2'),
+    url('/fonts/UniformPro-RegIt.woff') format('woff');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Uniform Pro';
+  src: url('/fonts/UniformPro-Med.woff2') format('woff2'),
+    url('/fonts/UniformPro-Med.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Uniform Pro';
+  src: url('/fonts/UniformPro-MedIt.woff2') format('woff2'),
+    url('/fonts/UniformPro-MedIt.woff') format('woff');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Uniform Pro';
+  src: url('/fonts/UniformPro-Bld.woff2') format('woff2'),
+    url('/fonts/UniformPro-Bld.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Uniform Pro';
+  src: url('/fonts/UniformPro-BldIt.woff2') format('woff2'),
+    url('/fonts/UniformPro-BldIt.woff') format('woff');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Uniform Pro';
+  src: url('/fonts/UniformPro-Blk.woff2') format('woff2'),
+    url('/fonts/UniformPro-Blk.woff') format('woff');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Uniform Pro';
+  src: url('/fonts/UniformPro-BlkIt.woff2') format('woff2'),
+    url('/fonts/UniformPro-BlkIt.woff') format('woff');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
