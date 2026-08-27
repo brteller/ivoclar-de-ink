@@ -39,8 +39,8 @@ const TETRIC_PRODUCTS = [
 		faqQuestion: 'Which restorations can it produce?',
 		faqAnswer: 'Crowns, 3-unit and multi-unit bridges, inlays, onlays, veneers, cantilever and adhesive bridges, hybrid (screw-retained on Ti-base) and all-on-x.',
 		specs: [{ label: 'Type', value: '4Y/5Y-PSZ zirconia disc' }, { label: 'Heights', value: '12–30 mm' }, { label: 'Shades', value: '20 (A–D, BL)' }],
-		// TODO(Ivoclar 2026-08-26, slide 7): swap image to "PIC 2 Programill 7 1741.jpeg" — awaiting the file.
-		image: 'https://www.ivoclar.com/GLOBAL%20-%20MEDIA/Products/Digital%20Processes/IPS%20e.max%20Zirconia/158065/image-thumb__158065__tile_default/IPS-e.max-Zirconia_2234-1_1920x1220px.88a19c79.jpg',
+		// Ivoclar 2026-08-26 slide 7: "PIC 2 Programill 7 1741"
+		image: '/images/ivoclar/programill-7-1741.jpg',
 		learnMoreUrl: 'https://www.ivoclar.com/de_de/products/digital-processes/ips-e.max-zirconia',
 		vimeoId: null
 	},
@@ -53,14 +53,14 @@ const TETRIC_PRODUCTS = [
 		faqQuestion: 'How are they applied?',
 		faqAnswer: 'By brush infiltration, in combination with IPS e.max Ceram Art and IPS e.max Ceram for new levels of esthetics.',
 		specs: [{ label: 'Type', value: 'Color & Effect Liquids' }],
-		// TODO(Ivoclar 2026-08-26, slide 8): swap image to "PIC 3 IPS e.max Zirconia Liquid 0727.jpeg" — awaiting the file.
-		image: 'https://www.ivoclar.com/cache-buster-2/GLOBAL%20-%20MEDIA/Products/Digital%20Processes/IPS%20e.max%20Zirconia/159057/image-thumb__159057__cms_image_banner__infinity_right/IPS-e.max-Zirconia-Liquid_0727-3_1920x1220px.dc699c07.jpg',
+		// Ivoclar 2026-08-26 slide 8: "PIC 3 IPS e.max Zirconia Liquid 0727"
+		image: '/images/ivoclar/zirconia-liquid-0727.jpg',
 		learnMoreUrl: 'https://www.ivoclar.com/de_de/products/digital-processes/ips-e.max-zirconia',
 		vimeoId: null
 	},
 	{
 		// Added per Ivoclar review 2026-08-20: "Add e.max Ceram Art (4th product)".
-		// TODO(Ivoclar 2026-08-26, slide 9): swap image to "PIC 1 Ceram Art.jpeg" — awaiting the file.
+		// Image per Ivoclar 2026-08-26 slide 9: "PIC 1 Ceram Art"
 		id: 'emax-ceram-art',
 		name: 'IPS e.max Ceram Art',
 		tagline: 'Characterization, perfected.',
@@ -73,7 +73,7 @@ const TETRIC_PRODUCTS = [
 		faqQuestion: 'When is it used?',
 		faqAnswer: 'In the characterize & finish step of the digital workflow, after milling and sintering — in combination with IPS e.max Zirconia Color & Effect Liquids.',
 		specs: [{ label: 'Type', value: 'Characterization ceramics' }],
-		image: 'https://www.ivoclar.com/GLOBAL%20-%20MEDIA/Products/Digital%20Processes/IPS%20e.max%20Zirconia/158891/image-thumb__158891__blog_detail/IPS-e.max-Zirconia_3329-3_1920x1220px.f97418bf.jpg',
+		image: '/images/ivoclar/ceram-art.jpg',
 		learnMoreUrl: 'https://www.ivoclar.com/de_de/products/veneering-materials/ips-e.max-ceram-art',
 		vimeoId: null
 	},
@@ -1002,6 +1002,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 						<article className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
 							<div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
 								{/* eslint-disable-next-line @next/next/no-img-element */}
+								{/* TODO(Ivoclar, slide 5 picture 1): Lena noted "not yet shared" — still outstanding. */}
 								<img src="https://www.ivoclar.com/GLOBAL%20-%20MEDIA/Products/Digital%20Processes/IPS%20e.max%20Zirconia/158065/image-thumb__158065__tile_default/IPS-e.max-Zirconia_2234-1_1920x1220px.88a19c79.jpg" alt={t('Developed with you')} className="h-full w-full object-cover" loading="lazy" />
 							</div>
 							<div className="p-6">
@@ -1012,8 +1013,8 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 						<article className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
 							<div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
 								{/* eslint-disable-next-line @next/next/no-img-element */}
-								{/* TODO(Ivoclar 2026-08-26, slide 5): swap to "PIC 6 IPS emax Zirconia BL1 1658.jpeg" — awaiting the file. */}
-								<img src="https://www.ivoclar.com/GLOBAL%20-%20MEDIA/Products/Digital%20Processes/IPS%20e.max%20Zirconia/162717/image-thumb__162717__tile_default/IPS-emax-Zirconia-BL1_1657_1920x1220px.e8533344.jpg" alt={t('Redefining trust')} className="h-full w-full object-cover" loading="lazy" />
+								{/* Ivoclar 2026-08-26 slide 5, picture 2: "PIC 6 IPS emax Zirconia BL1 1658" */}
+								<img src="/images/ivoclar/zirconia-bl1-1658.jpg" alt={t('Redefining trust')} className="h-full w-full object-cover" loading="lazy" />
 							</div>
 							<div className="p-6">
 								<h3 className="mb-2 text-lg font-normal text-[#0a478b]">{t('Redefining trust')}</h3>
@@ -1023,8 +1024,8 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 						<article className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
 							<div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
 								{/* eslint-disable-next-line @next/next/no-img-element */}
-								{/* TODO(Ivoclar 2026-08-26, slide 5): swap to "PIC 9 Programill 7 2052" — awaiting the file. */}
-								<img src="https://www.ivoclar.com/GLOBAL%20-%20MEDIA/Products/Digital%20Processes/IPS%20e.max%20Zirconia/158891/image-thumb__158891__blog_detail/IPS-e.max-Zirconia_3329-3_1920x1220px.f97418bf.jpg" alt={t('Part of the IPS e.max family')} className="h-full w-full object-cover" loading="lazy" />
+								{/* Ivoclar 2026-08-26 slide 5, picture 3: "PIC 9 Programill 7 2052" */}
+								<img src="/images/ivoclar/programill-7-2052.jpg" alt={t('Part of the IPS e.max family')} className="h-full w-full object-cover" loading="lazy" />
 							</div>
 							<div className="p-6">
 								<h3 className="mb-2 text-lg font-normal text-[#0a478b]">{t('Part of the IPS e.max family')}</h3>

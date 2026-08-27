@@ -12,16 +12,14 @@ const DEFAULT_STEPS = [
 		// Ivoclar 2026-08-26 slide 11: step 1 retitled "Materialauswahl" with Ivoclar-supplied copy.
 		title: 'Material selection',
 		body: 'IPS e.max Zirconia is an yttrium-stabilized zirconium oxide made from 4Y-PSZ / 5Y-PSZ raw materials for all types of fixed all-ceramic dental restorations — one disc for all applications.',
-		// TODO(Ivoclar 2026-08-26, slide 11): swap image to "PIC 5 PM7 0824" — awaiting the file.
-		image:
-			'https://www.ivoclar.com/GLOBAL%20-%20MEDIA/Products/Digital%20Equipment/Programill%207/154830/image-thumb__154830__tile_default/CAM-software_2952_1920x1220px.8a3fa481.jpg',
+		// Ivoclar 2026-08-26 slide 11: "PIC 5 PM7 0824"
+		image: '/images/ivoclar/pm7-0824.jpg',
 	},
 	{
 		title: 'Mill',
 		body: 'PrograMill 7 mills IPS e.max Zirconia precisely, with dedicated milling templates and a zero-point clamping system for reproducible, smooth results.',
-		// TODO(Ivoclar 2026-08-26, slide 12): swap image to "PIC 2 Programill 7 1741.jpeg" — awaiting the file.
-		image:
-			'https://www.ivoclar.com/GLOBAL%20-%20MEDIA/Products/Digital%20Equipment/Programill%207/154638/image-thumb__154638__tile_default/Programill-7_6838_1920x1220px.a6c87793.jpg',
+		// Ivoclar 2026-08-26 slide 12: "PIC 2 Programill 7 1741"
+		image: '/images/ivoclar/programill-7-1741.jpg',
 		// Ivoclar 2026-08-26 slide 12: add a "Mehr erfahren" button on this step.
 		learnMoreUrl: 'https://www.ivoclar.com/de_de/products/digital-equipment/programill-7',
 	},
@@ -35,9 +33,8 @@ const DEFAULT_STEPS = [
 	{
 		title: 'Characterize & finish',
 		body: 'Individualize with IPS e.max Zirconia Color & Effect Liquids and IPS e.max Ceram Art for lifelike, patient-specific esthetics.',
-		// TODO(Ivoclar 2026-08-26, slide 14): swap image to "PIC 3 IPS e.max Zirconia Liquid 0727" — awaiting the file.
-		image:
-			'https://www.ivoclar.com/cache-buster-2/GLOBAL%20-%20MEDIA/Products/Digital%20Processes/IPS%20e.max%20Zirconia/159057/image-thumb__159057__cms_image_banner__infinity_right/IPS-e.max-Zirconia-Liquid_0727-3_1920x1220px.dc699c07.jpg',
+		// Ivoclar 2026-08-26 slide 14: "PIC 3 IPS e.max Zirconia Liquid 0727"
+		image: '/images/ivoclar/zirconia-liquid-0727.jpg',
 	},
 ];
 function Chevron({ dir = 'left' }) {
