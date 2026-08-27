@@ -814,7 +814,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 						className={
 							isPosteriorHero
 								? 'relative flex min-h-[52vh] items-start bg-black pt-16 pb-12 md:items-center md:pt-0 md:pb-0'
-								: 'relative flex min-h-[52vh] items-start bg-gray-900 pt-16 pb-12 md:items-center md:pt-0 md:pb-0'
+								: 'relative flex min-h-[62vh] items-start bg-gray-900 pt-16 pb-12 md:min-h-[22rem] md:aspect-[289/91] md:items-center md:pt-0 md:pb-0'
 						}
 					>
 						{isPosteriorHero ? (
@@ -880,8 +880,8 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 								/>
 							</>
 						)}
-						<div className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 py-10 md:py-20">
-							<div className="max-w-[22rem] sm:max-w-xl">
+						<div className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 py-10 md:py-8 lg:py-10">
+							<div className="max-w-[22rem] sm:max-w-md lg:max-w-lg">
 								{/* Gradient border with transparent fill; inner area shows hero through bg-black/50 */}
 								<div
 									className="relative"
@@ -889,14 +889,14 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 										border: '1px solid #00a651',
 									}}
 								>
-									<div className="p-5 sm:p-8">
+									<div className="p-5 sm:p-6 lg:p-8">
 										{/* Ivoclar 2026-08-26 slide 1: headline filled the whole screen at 100% zoom and
 										    overflowed the green frame. Type scale reduced across all breakpoints. */}
-										<h2 className="text-[1.75rem] sm:text-3xl lg:text-5xl text-white font-light leading-tight">
+										<h2 className="text-[1.75rem] sm:text-2xl lg:text-4xl text-white font-light leading-tight">
 											{t('Limits')} <br></br>{t('redefined.')}
-											<div className="font-bold text-[2rem] sm:text-4xl lg:text-6xl text-white">{t('Standards raised.')}</div>
+											<div className="font-bold text-[2rem] sm:text-3xl lg:text-5xl text-white">{t('Standards raised.')}</div>
 										</h2>
-										<h1 className="text-white text-base sm:text-lg md:text-2xl lg:text-3xl mt-2 sm:mt-3 font-light leading-snug md:leading-tight">
+										<h1 className="text-white text-base sm:text-base md:text-lg lg:text-xl mt-2 font-light leading-snug md:leading-tight">
 											{htmlContent?.category?.name ? (
 												<>
 													IPS e.max Zirconia for {htmlContent.category.name}.
@@ -908,11 +908,11 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 											)}
 										</h1>
 
-										<div className="flex flex-wrap mb-2 sm:mb-8 mt-7 sm:mt-12 overflow-hidden items-center gap-4 sm:gap-6">
+										<div className="flex flex-wrap mb-2 mt-5 sm:mt-6 lg:mt-8 overflow-hidden items-center gap-4 sm:gap-6">
 											<button
 												type="button"
 												onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-												className="inline-block px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-white text-black font-bold text-base sm:text-lg transition-all shadow-lg hover:opacity-95"
+												className="inline-block px-6 sm:px-7 py-3 rounded-full bg-white text-black font-bold text-base transition-all shadow-lg hover:opacity-95"
 												
 											>
 												{conv.ctaText}
