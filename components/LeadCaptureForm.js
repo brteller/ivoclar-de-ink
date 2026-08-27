@@ -133,7 +133,7 @@ export default function LeadCaptureForm({ lang = 'de' }) {
   };
 
   return (
-    <section id="contact" className="py-16 px-4 md:px-6 bg-white border-t border-gray-200">
+    <section className="pb-16 px-4 md:px-6 bg-white">
       {RECAPTCHA_SITE_KEY && (
         <Script
           src={`https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`}
@@ -141,7 +141,8 @@ export default function LeadCaptureForm({ lang = 'de' }) {
         />
       )}
       <div className="max-w-5xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-normal text-[#0a478b] mb-8 tracking-tight">{t('Request your IPS e.max Zirconia order')}</h2>
+        {/* Ivoclar 2026-08-26 slide 10: on-page check-out reinstated beneath the offer CTA. */}
+        <h2 className="text-2xl md:text-3xl font-normal text-[#0a478b] mb-8 tracking-tight">{t('Or order directly here')}</h2>
         <form onSubmit={handleSubmit} noValidate className="space-y-5">
           <input type="hidden" name="utm_source" value={formData.utm_source} />
           <input type="hidden" name="utm_medium" value={formData.utm_medium} />

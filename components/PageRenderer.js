@@ -8,6 +8,7 @@ import QualityCard from '@/components/QualityCard';
 import EfficiencyCard from '@/components/EfficiencyCard';
 import SuperheroTestimonialCards from '@/components/SuperheroTestimonialCards';
 import ZirconiaOfferCta from '@/components/ZirconiaOfferCta';
+import LeadCaptureForm from '@/components/LeadCaptureForm';
 import WorkflowCarousel from '@/components/WorkflowCarousel';
 import { translate } from '@/lib/i18n';
 import { renderWithCitations, TETRIC_FOOTNOTES } from '@/lib/citations';
@@ -38,8 +39,9 @@ const TETRIC_PRODUCTS = [
 		faqQuestion: 'Which restorations can it produce?',
 		faqAnswer: 'Crowns, 3-unit and multi-unit bridges, inlays, onlays, veneers, cantilever and adhesive bridges, hybrid (screw-retained on Ti-base) and all-on-x.',
 		specs: [{ label: 'Type', value: '4Y/5Y-PSZ zirconia disc' }, { label: 'Heights', value: '12–30 mm' }, { label: 'Shades', value: '20 (A–D, BL)' }],
+		// TODO(Ivoclar 2026-08-26, slide 7): swap image to "PIC 2 Programill 7 1741.jpeg" — awaiting the file.
 		image: 'https://www.ivoclar.com/GLOBAL%20-%20MEDIA/Products/Digital%20Processes/IPS%20e.max%20Zirconia/158065/image-thumb__158065__tile_default/IPS-e.max-Zirconia_2234-1_1920x1220px.88a19c79.jpg',
-		learnMoreUrl: 'https://www.ivoclar.com/en_gb/products/digital-processes/ips-e.max-zirconia',
+		learnMoreUrl: 'https://www.ivoclar.com/de_de/products/digital-processes/ips-e.max-zirconia',
 		vimeoId: null
 	},
 	{
@@ -51,14 +53,14 @@ const TETRIC_PRODUCTS = [
 		faqQuestion: 'How are they applied?',
 		faqAnswer: 'By brush infiltration, in combination with IPS e.max Ceram Art and IPS e.max Ceram for new levels of esthetics.',
 		specs: [{ label: 'Type', value: 'Color & Effect Liquids' }],
+		// TODO(Ivoclar 2026-08-26, slide 8): swap image to "PIC 3 IPS e.max Zirconia Liquid 0727.jpeg" — awaiting the file.
 		image: 'https://www.ivoclar.com/cache-buster-2/GLOBAL%20-%20MEDIA/Products/Digital%20Processes/IPS%20e.max%20Zirconia/159057/image-thumb__159057__cms_image_banner__infinity_right/IPS-e.max-Zirconia-Liquid_0727-3_1920x1220px.dc699c07.jpg',
-		learnMoreUrl: 'https://www.ivoclar.com/en_gb/products/digital-processes/ips-e.max-zirconia',
+		learnMoreUrl: 'https://www.ivoclar.com/de_de/products/digital-processes/ips-e.max-zirconia',
 		vimeoId: null
 	},
 	{
 		// Added per Ivoclar review 2026-08-20: "Add e.max Ceram Art (4th product)".
-		// TODO(Ivoclar): image + learnMoreUrl are placeholders reusing Redefining Package assets —
-		// awaiting a dedicated IPS e.max Ceram Art product shot and product page URL from Ivoclar.
+		// TODO(Ivoclar 2026-08-26, slide 9): swap image to "PIC 1 Ceram Art.jpeg" — awaiting the file.
 		id: 'emax-ceram-art',
 		name: 'IPS e.max Ceram Art',
 		tagline: 'Characterization, perfected.',
@@ -72,20 +74,7 @@ const TETRIC_PRODUCTS = [
 		faqAnswer: 'In the characterize & finish step of the digital workflow, after milling and sintering — in combination with IPS e.max Zirconia Color & Effect Liquids.',
 		specs: [{ label: 'Type', value: 'Characterization ceramics' }],
 		image: 'https://www.ivoclar.com/GLOBAL%20-%20MEDIA/Products/Digital%20Processes/IPS%20e.max%20Zirconia/158891/image-thumb__158891__blog_detail/IPS-e.max-Zirconia_3329-3_1920x1220px.f97418bf.jpg',
-		learnMoreUrl: 'https://www.ivoclar.com/en_gb/campaigns/redefining-limits?utm_source=On+Site+Campaign&utm_medium=Product+Page&utm_campaign=Zirconia+Redefining+Package+2026',
-		vimeoId: null
-	},
-	{
-		id: 'redefining-package',
-		name: 'The Redefining Package',
-		tagline: 'Two innovations. All ceramics. Unlimited esthetics.',
-		description: 'The IPS e.max family welcomes two new additions — IPS e.max Zirconia and IPS e.max Ceram Art — each with distinct strengths, designed to perform seamlessly together. For a limited time, available as an exclusive bundle.',
-		features: ['IPS e.max Zirconia premium disc', 'IPS e.max Ceram Art for characterization', 'Limited-time exclusive bundle'],
-		faqQuestion: 'How do I order?',
-		faqAnswer: 'Order your Redefining Package using the form — our team will connect you with a dealer in your area.',
-		specs: [{ label: 'Type', value: 'Bundle' }, { label: 'Availability', value: 'Limited time' }],
-		image: 'https://www.ivoclar.com/GLOBAL%20-%20MEDIA/Products/Digital%20Processes/IPS%20e.max%20Zirconia/158891/image-thumb__158891__blog_detail/IPS-e.max-Zirconia_3329-3_1920x1220px.f97418bf.jpg',
-		learnMoreUrl: 'https://www.ivoclar.com/en_gb/campaigns/redefining-limits?utm_source=On+Site+Campaign&utm_medium=Product+Page&utm_campaign=Zirconia+Redefining+Package+2026',
+		learnMoreUrl: 'https://www.ivoclar.com/de_de/products/veneering-materials/ips-e.max-ceram-art',
 		vimeoId: null
 	},
 ];
@@ -102,7 +91,6 @@ const ANTERIOR_RESTORATION_PRODUCT_IDS = [
 const BUY_SECTION_PRODUCT_IDS = [
 	'ips-emax-zirconia',
 	'emax-color-liquids',
-	'redefining-package',
 ];
 
 const DEFAULT_TESTIMONIAL_IDS = [
@@ -902,11 +890,13 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 									}}
 								>
 									<div className="p-5 sm:p-8">
-										<h2 className="text-[2rem] sm:text-4xl lg:text-7xl text-white font-light leading-tight">
+										{/* Ivoclar 2026-08-26 slide 1: headline filled the whole screen at 100% zoom and
+										    overflowed the green frame. Type scale reduced across all breakpoints. */}
+										<h2 className="text-[1.75rem] sm:text-3xl lg:text-5xl text-white font-light leading-tight">
 											{t('Limits')} <br></br>{t('redefined.')}
-											<div className="font-bold text-5xl sm:text-6xl lg:text-8xl text-white">{t('Standards raised.')}</div>
+											<div className="font-bold text-[2rem] sm:text-4xl lg:text-6xl text-white">{t('Standards raised.')}</div>
 										</h2>
-										<h1 className="text-white text-base sm:text-lg md:text-5xl mt-2 sm:mt-3 font-light leading-snug md:leading-tight">
+										<h1 className="text-white text-base sm:text-lg md:text-2xl lg:text-3xl mt-2 sm:mt-3 font-light leading-snug md:leading-tight">
 											{htmlContent?.category?.name ? (
 												<>
 													IPS e.max Zirconia for {htmlContent.category.name}.
@@ -927,17 +917,16 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 											>
 												{conv.ctaText}
 											</button>
-											<a
-												href={primaryShopUrl}
-												onClick={handleShopClick}
-												target={!shouldUseShopModal ? '_blank' : undefined}
-												rel={!shouldUseShopModal ? 'noopener noreferrer' : undefined}
+											{/* Ivoclar review 2026-08-20: Button 1 "Jetzt bestellen", Button 2 "Mehr erfahren".
+											    Ivoclar 2026-08-26 slide 2: "Mehr erfahren" now scrolls to the
+											    "Warum IPS e.max Zirconia?" section instead of linking off-site. */}
+											<button
+												type="button"
+												onClick={() => document.getElementById('warum-zirconia')?.scrollIntoView({ behavior: 'smooth' })}
 												className="text-white font-medium hover:underline underline-offset-4 decoration-2 hover:opacity-90 transition-opacity"
 											>
-												{/* Per Ivoclar review 2026-08-20: Button 1 "Jetzt bestellen", Button 2 "Mehr erfahren".
-												    Previously both buttons read "Jetzt bestellen". */}
 												{t('Learn more')}
-											</a>
+											</button>
 										</div>
 									</div>
 								</div>
@@ -968,7 +957,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
             {(() => {
 				const conv = getConversionContent();
 				return (
-					<section className="py-20 px-4 md:px-6 bg-white">
+					<section id="warum-zirconia" className="scroll-mt-24 py-20 px-4 md:px-6 bg-white">
 						<div className="max-w-6xl mx-auto">
 							<h2 className="text-2xl md:text-3xl font-normal text-[#0a478b] mb-10 tracking-tight">{conv.benefitsHeadline}</h2>
 							{/* Per Ivoclar review 2026-08-20 ("Can we add a picture to this section?"):
@@ -1023,6 +1012,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 						<article className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
 							<div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
 								{/* eslint-disable-next-line @next/next/no-img-element */}
+								{/* TODO(Ivoclar 2026-08-26, slide 5): swap to "PIC 6 IPS emax Zirconia BL1 1658.jpeg" — awaiting the file. */}
 								<img src="https://www.ivoclar.com/GLOBAL%20-%20MEDIA/Products/Digital%20Processes/IPS%20e.max%20Zirconia/162717/image-thumb__162717__tile_default/IPS-emax-Zirconia-BL1_1657_1920x1220px.e8533344.jpg" alt={t('Redefining trust')} className="h-full w-full object-cover" loading="lazy" />
 							</div>
 							<div className="p-6">
@@ -1033,6 +1023,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 						<article className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
 							<div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
 								{/* eslint-disable-next-line @next/next/no-img-element */}
+								{/* TODO(Ivoclar 2026-08-26, slide 5): swap to "PIC 9 Programill 7 2052" — awaiting the file. */}
 								<img src="https://www.ivoclar.com/GLOBAL%20-%20MEDIA/Products/Digital%20Processes/IPS%20e.max%20Zirconia/158891/image-thumb__158891__blog_detail/IPS-e.max-Zirconia_3329-3_1920x1220px.f97418bf.jpg" alt={t('Part of the IPS e.max family')} className="h-full w-full object-cover" loading="lazy" />
 							</div>
 							<div className="p-6">
@@ -1131,9 +1122,10 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 											className="w-full h-full object-contain"
 											onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling?.classList.remove('hidden'); }}
 										/>
+										{/* Image fallback. Must stay client-safe — the previous version printed
+										    "Add asset at <url>" on the live page, which Ivoclar saw on 2026-08-26. */}
 										<div className="hidden text-center text-gray-400 text-sm p-4">
-											<span className="block font-medium text-gray-500 mb-1">{t('Product image')}</span>
-											<span>Add asset at <code className="text-xs bg-gray-200 px-1 rounded-none">{p.image}</code></span>
+											<span className="block font-medium text-gray-500">{t('Product image')}</span>
 										</div>
 									</div>
 								</div>
@@ -1197,8 +1189,8 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 											<dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mb-6">
 												{p.specs.map((spec, i) => (
 													<React.Fragment key={i}>
-														<dt className="text-sm font-medium text-gray-500">{spec.label}</dt>
-														<dd className="text-sm text-gray-800">{spec.value}</dd>
+														<dt className="text-sm font-medium text-gray-500">{t(spec.label)}</dt>
+														<dd className="text-sm text-gray-800">{t(spec.value)}</dd>
 													</React.Fragment>
 												))}
 											</dl>
@@ -1330,6 +1322,10 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 
             {/* Zirconia new-customer offer — replaces the on-page order form per Ivoclar review 2026-08-20 */}
             <ZirconiaOfferCta lang={lang} />
+
+            {/* Ivoclar 2026-08-26 slide 10: "incorporate the form so that a final check-out
+                within one page is possible" — form restored directly below the offer CTA. */}
+            <LeadCaptureForm pathname={pathname} pageContext={pageContext} lang={lang} />
 
             {/* Digital Fixed Prosthetics Workflow — moved below the offer per Ivoclar review 2026-08-20
                 ("Move this bracket to the end (after the form)") */}
