@@ -52,7 +52,9 @@ const TETRIC_PRODUCTS = [
 		features: ['All 16 A–D shades for brush infiltration', '7 effect liquids: Snow, Sunset, Berry, Hazel, Sky, Storm and Opaque', 'Ready to use with an integrated colour indicator'],
 		faqQuestion: 'How are they applied?',
 		faqAnswer: 'By brush infiltration, in combination with IPS e.max Ceram Art and IPS e.max Ceram for new levels of esthetics.',
-		specs: [{ label: 'Type', value: 'Color & Effect Liquids' }],
+		// Ivoclar feedback 2026-09 slide 4: the "Typ / Color & Effect Liquids" spec row is
+		// deleted — it only restated the product name.
+		specs: [],
 		// Ivoclar 2026-08-26 slide 8: "PIC 3 IPS e.max Zirconia Liquid 0727"
 		image: '/images/ivoclar/zirconia-liquid-0727.jpg',
 		learnMoreUrl: 'https://www.ivoclar.com/de_de/products/digital-processes/ips-e.max-zirconia',
@@ -72,7 +74,8 @@ const TETRIC_PRODUCTS = [
 		],
 		faqQuestion: 'When is it used?',
 		faqAnswer: 'In the characterize & finish step of the digital workflow, after milling and sintering — in combination with IPS e.max Zirconia Color & Effect Liquids.',
-		specs: [{ label: 'Type', value: 'Characterization ceramics' }],
+		// Ivoclar feedback 2026-09 slide 5: the "Typ / Charakterisierungskeramik" spec row is deleted.
+		specs: [],
 		image: '/images/ivoclar/ceram-art.jpg',
 		learnMoreUrl: 'https://www.ivoclar.com/de_de/products/veneering-materials/ips-e.max-ceram-art',
 		vimeoId: null
@@ -213,7 +216,10 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 	const [lastScrollY, setLastScrollY] = useState(0);
 	const [selectedProductIndex, setSelectedProductIndex] = useState(0);
 	const [isShopModalOpen, setIsShopModalOpen] = useState(false);
-	const [lang, setLang] = useState('de');
+	// Ivoclar feedback 2026-09 slide 1: the DE/EN header toggle is removed — the pilot is
+	// German-only, so the language is pinned to 'de'. Kept as a constant (rather than
+	// deleting the prop) so the toggle can be restored in one line if a second locale lands.
+	const lang = 'de';
 	const t = (str) => translate(lang, str);
 	// Citation-aware render that translates first. Product/API copy is authored in English;
 	// without this it bypassed translate() and rendered English on the German page
@@ -757,9 +763,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 
                         {/* Right: Search, Language, primary CTA */}
                         <div className="flex items-center gap-5 flex-shrink-0 ml-auto">
-                            
-                            <button type="button" onClick={() => setLang(lang === 'de' ? 'en' : 'de')} aria-label="Toggle language" className="text-[#0a478b] text-sm font-semibold hover:underline underline-offset-2">{lang === 'de' ? 'EN' : 'DE'}</button>
-                            
+                            {/* Ivoclar feedback 2026-09 slide 1: DE/EN language toggle removed. */}
                             <a
                                 href={primaryShopUrl}
                                 onClick={handleShopClick}
@@ -960,11 +964,20 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 					<section id="warum-zirconia" className="scroll-mt-24 py-20 px-4 md:px-6 bg-white">
 						<div className="max-w-6xl mx-auto">
 							<h2 className="text-2xl md:text-3xl font-normal text-[#0a478b] mb-10 tracking-tight">{conv.benefitsHeadline}</h2>
-							{/* Per Ivoclar review 2026-08-20 ("Can we add a picture to this section?"):
+							{/* Ivoclar feedback 2026-09 slide 2: "show the picture in a bigger scale - the text
+							    is blurry and not good to read." Two causes, both fixed here:
+							      1. The served file was gtx-animation.mp4 - a 1280x892 / 649 kbps
+							         re-compression. The German master already in the repo
+							         (gtx-animation-de.mp4, 1600x1116 / 9.6 Mbps) is re-encoded at CRF 21
+							         to gtx-animation-hq.mp4 - same 1600x1116, 1.8 Mbps, 4.5 MB.
+							      2. object-cover in the narrower column cropped and downscaled the frame.
+							         The animation now takes the wider column at its own aspect ratio,
+							         and the benefit list stacks in one column beside it.
+							    Original note (Ivoclar review 2026-08-20, "Can we add a picture to this section?"):
 							    visual added alongside the benefit list. Using the Ivoclar-supplied GTx
 							    animation, which matches the GTx Technology benefit. Swap for a still if preferred. */}
-							<div className="grid grid-cols-1 lg:grid-cols-[1.1fr,1fr] gap-10 lg:gap-14 items-center">
-								<ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div className="grid grid-cols-1 lg:grid-cols-[1fr,1.3fr] gap-10 lg:gap-14 items-center">
+								<ul className="grid grid-cols-1 gap-4">
 									{conv.benefitsList.map((item, i) => (
 										<li key={i} className="flex items-start gap-3 text-gray-600 leading-relaxed">
 											<span className="text-[#00a651] font-bold flex-shrink-0 mt-0.5">✓</span>
@@ -974,9 +987,9 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 								</ul>
 								<div className="w-full overflow-hidden rounded-2xl bg-gray-50">
 									<video
-										className="h-full w-full object-cover"
-										src="/videos/gtx-animation.mp4"
-										poster="/videos/gtx-animation-poster.jpg"
+										className="block h-auto w-full"
+										src="/videos/gtx-animation-hq.mp4"
+										poster="/videos/gtx-animation-hq-poster.jpg"
 										autoPlay
 										muted
 										loop
@@ -1035,7 +1048,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 							</div>
 							<div className="flex flex-wrap items-center justify-center gap-6 mt-14">
 								<button type="button" onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })} className="inline-block px-8 py-4 rounded-full bg-[#0a478b] text-white font-bold text-lg transition-all shadow-lg hover:opacity-95">{conv.ctaText}</button>
-								<a href={primaryShopUrl} onClick={handleShopClick} target={!shouldUseShopModal ? '_blank' : undefined} rel={!shouldUseShopModal ? 'noopener noreferrer' : undefined} className="text-[#0a478b] font-medium underline underline-offset-4 decoration-2 hover:opacity-90 transition-opacity">{t('Order the Redefining Package')}</a>
+								{/* Ivoclar feedback 2026-09 slide 3: secondary "Redefining Package bestellen" link removed. */}
 							</div>
 						</div>
 					</section>

@@ -3,69 +3,38 @@
 import { translate } from '@/lib/i18n';
 
 /**
- * Zirconia new-customer offer CTA.
+ * Zirconia new-customer offer intro.
  *
- * Per Ivoclar (Lena Lackner) review of 2026-08-20, the on-page ColdStart order form is
- * replaced by a link out to Ivoclar's own, already-approved online form:
- *   "Remove with following form (link to online form: IPS e.max Zirconia Neukundenangebot | Ivoclar DE)
- *    Add as headline: Lernen Sie das neue Zirkonoxid kennen und testen Sie es selbst!
- *    Subheadline: IPS e.max Zirconia mit 30% Rabatt bestellen:"
+ * History:
+ *  - 2026-08-20 (Lena Lackner): the on-page ColdStart form was replaced by a link out to
+ *    Ivoclar's own approved form, with the headline "Lernen Sie das neue Zirkonoxid kennen
+ *    und testen Sie es selbst!" and subheadline "IPS e.max Zirconia mit 30% Rabatt bestellen:".
+ *  - 2026-08-26 (slide 10): the on-page check-out was reinstated below this block.
+ *  - 2026-09 (slide 6): with the on-page form live, the outbound route is redundant. Ivoclar
+ *    asked to delete the "Jetzt bestellen" button, delete the Germany/Austria availability
+ *    line here (it still appears once, above the submit button in the form), and exchange the
+ *    subheadline for the risk-free offer copy from the Ivoclar DE landing page.
  *
- * The previous form component (LeadCaptureForm) is intentionally left in the repo so this
- * can be reverted in one line if Ivoclar wants the on-page form back.
+ * This section is now purely the offer headline plus that copy; LeadCaptureForm renders
+ * directly beneath it, so ordering happens in one place on one page.
  *
- * NOTE: keeps id="contact" because the hero and "Von Experten für Experten" CTAs scroll to it.
- * NOTE: outbound clicks are tagged so the pilot can still attribute conversions even though
- *       the submission itself now happens on ivoclar.com.
+ * NOTE: keeps id="contact" because the header CTA and the "Von Experten für Experten" CTA
+ * scroll to it.
  */
-
-const IVOCLAR_OFFER_URL =
-	'https://www.ivoclar.com/de_de/local/zirconia_neukundenangebot' +
-	'?utm_source=Homepage&utm_medium=Banner+Startseite+Slider+Message' +
-	'&utm_campaign=DE+IPS+e.max+Zirconia+2026';
 
 export default function ZirconiaOfferCta({ lang = 'de' }) {
 	const t = (s) => translate(lang, s);
 
-	const handleClick = () => {
-		if (typeof window === 'undefined') return;
-		try {
-			window.dataLayer = window.dataLayer || [];
-			window.dataLayer.push({
-				event: 'offer_cta_click',
-				cta: 'zirconia_neukundenangebot',
-				destination: IVOCLAR_OFFER_URL,
-			});
-		} catch (e) {
-			// tracking must never block the outbound click
-		}
-	};
-
 	return (
-		<section id="contact" className="py-20 px-4 md:px-6 bg-white border-t border-gray-200">
-			<div className="max-w-4xl mx-auto text-center">
+		<section id="contact" className="scroll-mt-24 pt-20 pb-10 px-4 md:px-6 bg-white border-t border-gray-200">
+			<div className="max-w-5xl mx-auto text-center">
 				<h2 className="text-2xl md:text-3xl lg:text-4xl font-normal text-[#0a478b] tracking-tight leading-snug">
 					{t('Get to know the new zirconium oxide and test it yourself!')}
 				</h2>
-				<p className="mt-4 text-lg md:text-xl text-gray-700">
-					{t('Order IPS e.max Zirconia at 30% off:')}
-				</p>
-				<div className="mt-8 flex justify-center">
-					<a
-						href={IVOCLAR_OFFER_URL}
-						onClick={handleClick}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="inline-flex items-center gap-2 bg-[#0a478b] hover:bg-[#083a70] text-white font-bold px-8 py-4 rounded-full transition-colors"
-					>
-						{t('Order now')}
-						<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-						</svg>
-					</a>
-				</div>
-				<p className="mt-6 text-xs text-gray-500">
-					{t('This offer is available in Germany and Austria only.')}
+				{/* Ivoclar feedback 2026-09 slide 6: replaces "IPS e.max Zirconia mit 30% Rabatt
+				    bestellen:". Copy taken verbatim from the Ivoclar DE offer page. */}
+				<p className="mt-5 text-lg md:text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+					{t('Order your first IPS e.max Zirconia disc now at a preferential price with a 30% discount and test it entirely without risk! If you are not satisfied, you get your money back.')}
 				</p>
 			</div>
 		</section>
