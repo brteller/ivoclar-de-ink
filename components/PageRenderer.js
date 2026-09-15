@@ -12,7 +12,8 @@ import LeadCaptureForm from '@/components/LeadCaptureForm';
 import WorkflowCarousel from '@/components/WorkflowCarousel';
 import { translate } from '@/lib/i18n';
 import { renderWithCitations, TETRIC_FOOTNOTES } from '@/lib/citations';
-import { termNavigationItems, chatGptUrl } from '@/lib/terms';
+import { termNavigationItems } from '@/lib/terms';
+import AskAi from '@/components/AskAi';
 
 /**
  * Per-category hero treatment (Lena, 10 Sep 2026: "if somebody is looking for this and
@@ -1104,23 +1105,23 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 								</div>
 							))}
 						</dl>
-						<div className="mt-10 flex flex-wrap items-center gap-4">
-							<button
-								type="button"
-								onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-								className="inline-block px-7 py-3 rounded-full bg-[#0a478b] text-white font-bold text-base transition-all shadow-lg hover:opacity-95"
-							>
-								{t('Order now')}
-							</button>
-							<a
-								href={chatGptUrl(term)}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="inline-flex items-center gap-2 text-[#0a478b] font-medium hover:underline underline-offset-4 decoration-2"
-							>
-								{t('Ask ChatGPT this question')}
-								<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-							</a>
+						{/* "Frag eine KI": the same question, opened in ChatGPT / Claude / Gemini / Grok /
+						    Perplexity with this page named as the source - the pattern from the GroupUps and
+						    Original Pixel builds (lib/askAi.js). /ki-fragen lists every prompt on the site. */}
+						<div className="mt-10 grid grid-cols-1 md:grid-cols-[1fr,auto] gap-8 items-end">
+							<AskAi term={term} tone="muted" />
+							<div className="flex flex-wrap items-center gap-4">
+								<button
+									type="button"
+									onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+									className="inline-block px-7 py-3 rounded-full bg-[#0a478b] text-white font-bold text-base transition-all shadow-lg hover:opacity-95"
+								>
+									{t('Order now')}
+								</button>
+								<a href="/ki-fragen" className="text-[#0a478b] font-medium hover:underline underline-offset-4 decoration-2">
+									{t('All questions for AI assistants')}
+								</a>
+							</div>
 						</div>
 					</div>
 				</section>
@@ -1478,6 +1479,14 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
             {getNavigationItems().length > 0 && (
 			<section className="py-16 px-4 md:px-6 bg-gray-50 border-t border-gray-200">
 				<div className="max-w-6xl mx-auto">
+					{!term && (
+						<div className="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+							<AskAi tone="muted" />
+							<a href="/ki-fragen" className="text-[#0a478b] font-medium hover:underline underline-offset-4 decoration-2">
+								{t('All questions for AI assistants')}
+							</a>
+						</div>
+					)}
 					<div className="flex flex-wrap justify-center gap-2">
 						{getNavigationItems().map((item, index) => (
 							<a
