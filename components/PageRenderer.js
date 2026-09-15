@@ -12,6 +12,23 @@ import LeadCaptureForm from '@/components/LeadCaptureForm';
 import WorkflowCarousel from '@/components/WorkflowCarousel';
 import { translate } from '@/lib/i18n';
 import { renderWithCitations, TETRIC_FOOTNOTES } from '@/lib/citations';
+import { termNavigationItems, chatGptUrl } from '@/lib/terms';
+
+/**
+ * Per-category hero treatment (Lena, 10 Sep 2026: "if somebody is looking for this and
+ * this, then we push out different pictures"). `default` keeps the Ivoclar banner video;
+ * every other variant swaps the desktop video for an Ivoclar still that matches the term.
+ * Keys are referenced from lib/terms.js (`hero`). All stills are the Ivoclar-supplied
+ * photography from the 26.08 feedback deck, so nothing here is AI-generated.
+ */
+const HERO_VARIANTS = {
+	default: null,
+	milling: { image: '/images/ivoclar/pm7-0824.jpg', position: 'center' },
+	esthetics: { image: '/images/ivoclar/zirconia-bl1-1658.jpg', position: 'center' },
+	liquids: { image: '/images/ivoclar/zirconia-liquid-0727.jpg', position: 'center' },
+	workflow: { image: '/images/ivoclar/programill-7-2052.jpg', position: 'center' },
+	ceram: { image: '/images/ivoclar/ceram-art.jpg', position: 'center' },
+};
 
 /** Default top hero background (first section). */
 const HERO_TOP_IMAGE = 'https://www.ivoclar.com/GLOBAL%20-%20MEDIA/Products/Digital%20Processes/IPS%20e.max%20Zirconia/158891/image-thumb__158891__blog_detail/IPS-e.max-Zirconia_3329-3_1920x1220px.f97418bf.jpg';
@@ -211,7 +228,7 @@ function getSuperheroTestimonialIds(htmlContent, pageContext, categorySlugKey) {
 
 const SHOW_DENTIST_TESTIMONIALS = false;
 
-const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
+const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) => {
 	const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 	const [lastScrollY, setLastScrollY] = useState(0);
 	const [selectedProductIndex, setSelectedProductIndex] = useState(0);
@@ -242,6 +259,9 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 
 	// Central page context - single source of truth
 	const getPageContext = () => {
+		// German search-term pages (lib/terms.js) are resolved by the route, not by the API,
+		// so they are category pages even when the ColdStart response carries no category.
+		if (term) return { type: 'category', category: term.name, parts: [term.slug], term };
 		if (!htmlContent) return { type: 'home' };
 
 		const parts = (pathname || (typeof window !== 'undefined' ? window.location.pathname : '')).split('/').filter(Boolean);
@@ -396,6 +416,11 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 	};
 
 	const getNavigationItems = () => {
+		// The bottom pills are the confirmed German search terms (10 Sep review), not the
+		// categories the API returns - until the Germany business has its own ColdStart key
+		// the API still answers with the North America (Tetric) category list.
+		const termNav = termNavigationItems();
+		if (termNav.length > 0) return termNav;
 		if (!htmlContent) return [];
 
 		// Normalize pages_* to arrays (main page returns them as arrays)
@@ -614,14 +639,19 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 		const benefitsRaw = c?.features || c?.benefits;
 		// API copy is authored in English — run it through translate() so the German page
 		// does not mix languages. Strings with no DE entry fall through unchanged.
-		const benefitsList = (Array.isArray(benefitsRaw) && benefitsRaw.length > 0
-			? benefitsRaw
-			: defaultBenefits
-		).map((b) => (typeof b === 'string' ? t(b) : b));
-		const heroHeadline = t(c?.hero_headline || (locationStr ? `${category} in ${shortLocation}` : category));
-		const heroDescription = t(c?.hero_subheadline || c?.hero_description || (locationStr ? `${category} in ${locationStr}. ${CREATOR.description}` : CREATOR.description));
+		// Term pages (Lena, 10 Sep): headline = the question the searcher typed, subline = the
+		// answer, and the four "Warum" benefits are written for that term. API copy stays the
+		// fallback for everything the term does not define.
+		const benefitsList = Array.isArray(term?.benefits) && term.benefits.length > 0
+			? term.benefits
+			: (Array.isArray(benefitsRaw) && benefitsRaw.length > 0
+				? benefitsRaw
+				: defaultBenefits
+			).map((b) => (typeof b === 'string' ? t(b) : b));
+		const heroHeadline = term?.question || t(c?.hero_headline || (locationStr ? `${category} in ${shortLocation}` : category));
+		const heroDescription = term?.answer || t(c?.hero_subheadline || c?.hero_description || (locationStr ? `${category} in ${locationStr}. ${CREATOR.description}` : CREATOR.description));
 		const heroImageUrl = c?.hero_image_url || (Array.isArray(c?.product_images) && c.product_images[0]) || null;
-		const benefitsHeadline = t(c?.benefits_headline || 'Why IPS e.max Zirconia?');
+		const benefitsHeadline = term?.whyHeadline || t(c?.benefits_headline || 'Why IPS e.max Zirconia?');
 		const videoUrl = c?.video_url || null;
 		const infographicUrl = c?.infographic_url || c?.secondary_image_url || null;
 		const ctaText = t(c?.cta_text || 'Order now');
@@ -672,6 +702,28 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 
 	// Generate JSON-LD structured data for dynamic pages using pageContext
 	const getStructuredData = () => {
+		if (term && Array.isArray(term.faq) && term.faq.length > 0) {
+			return {
+				"@context": "https://schema.org",
+				"@graph": [
+					{
+						"@type": "FAQPage",
+						"mainEntity": [{ q: term.question, a: term.answer }, ...term.faq].map((item) => ({
+							"@type": "Question",
+							"name": item.q,
+							"acceptedAnswer": { "@type": "Answer", "text": item.a },
+						})),
+					},
+					{
+						"@type": "Product",
+						"name": "IPS e.max Zirconia",
+						"brand": { "@type": "Brand", "name": "Ivoclar" },
+						"description": term.seoDescription || CREATOR.description,
+						"url": `${origin || ''}/${term.slug}`,
+					},
+				],
+			};
+		}
 		if (isHomePage) {
 			return {
 				"@context": "https://schema.org",
@@ -763,16 +815,9 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 
                         {/* Right: Search, Language, primary CTA */}
                         <div className="flex items-center gap-5 flex-shrink-0 ml-auto">
-                            {/* Ivoclar feedback 2026-09 slide 1: DE/EN language toggle removed. */}
-                            <a
-                                href={primaryShopUrl}
-                                onClick={handleShopClick}
-                                target={!shouldUseShopModal ? '_blank' : undefined}
-                                rel={!shouldUseShopModal ? 'noopener noreferrer' : undefined}
-                                className="text-[#0a478b] text-sm font-medium hover:underline underline-offset-2 decoration-[#0a478b] hover:decoration-[#083a70] transition-colors"
-                            >
-                                {t('Zirconia offer')}
-                            </a>
+                            {/* Ivoclar feedback 2026-09 slide 1: DE/EN language toggle removed, and the
+                                "Zirkonoxid-Angebot" nav link marked 'Remove' on the same slide is gone too
+                                (Feedback Tracker row 2). The order CTA scrolls to the on-page form. */}
                             <button
                                 type="button"
                                 onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
@@ -796,13 +841,14 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 					? HERO_TOP_IMAGE_LIGHT_CURE
 					: HERO_TOP_IMAGE;
 				const isPosteriorHero = isAnthonyTopHeroCategory || isLightCureCategory;
-				const heroBgUrlMobile = isPosteriorHero ? heroBgUrl : HERO_TOP_IMAGE_DEFAULT_MOBILE;
+				const heroVariant = (term && HERO_VARIANTS[term.hero]) || null;
+				const heroBgUrlMobile = heroVariant ? heroVariant.image : isPosteriorHero ? heroBgUrl : HERO_TOP_IMAGE_DEFAULT_MOBILE;
 				const headlineParts = (conv.heroHeadline || t('Limits redefined. Standards raised.')).split(/(\s+)/);
 				const lastWord = headlineParts[headlineParts.length - 1];
 				const beforeLast = headlineParts.slice(0, -1).join('');
 				const subline = conv.heroDescription || t('IPS e.max Zirconia — the new premium zirconium oxide.');
 				const heroBgStyle = {
-					backgroundImage: `url(${heroBgUrl})`,
+					backgroundImage: `url(${heroVariant ? heroVariant.image : heroBgUrl})`,
 					backgroundSize: 'cover',
 					backgroundRepeat: 'no-repeat',
 					backgroundPosition: 'center top',
@@ -861,6 +907,8 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 								{/* Ivoclar-supplied banner video (Lena, 2026-08-20). Desktop only; the still above
 								    remains the mobile/fallback and the poster covers the pre-load frame.
 								    Source re-encoded for web: 24 MB → 0.7 MB, audio stripped for autoplay. */}
+								{/* Per-term hero still (HERO_VARIANTS) replaces the video where the term asks for one. */}
+								{!heroVariant && (
 								<video
 									className="absolute inset-0 z-[1] hidden md:block h-full w-full object-cover"
 									src="/videos/zirconia-hero.mp4"
@@ -872,6 +920,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 									preload="metadata"
 									aria-label={t('IPS e.max Zirconia banner video')}
 								/>
+								)}
 								<div className="absolute inset-0 z-[2] hidden md:block bg-black/50" aria-hidden />
 								<div className="absolute inset-0 z-0 bg-cover bg-top bg-no-repeat md:hidden" style={heroBgStyleMobile} aria-hidden />
 								<div
@@ -885,7 +934,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 							</>
 						)}
 						<div className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 py-10 md:py-8 lg:py-10">
-							<div className="max-w-[22rem] sm:max-w-md lg:max-w-lg">
+							<div className={term ? 'max-w-[22rem] sm:max-w-md lg:max-w-2xl' : 'max-w-[22rem] sm:max-w-md lg:max-w-lg'}>
 								{/* Gradient border with transparent fill; inner area shows hero through bg-black/50 */}
 								<div
 									className="relative"
@@ -896,6 +945,23 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 									<div className="p-5 sm:p-6 lg:p-8">
 										{/* Ivoclar 2026-08-26 slide 1: headline filled the whole screen at 100% zoom and
 										    overflowed the green frame. Type scale reduced across all breakpoints. */}
+										{term ? (
+											<>
+												{/* Term pages (Lena, 10 Sep): the eyebrow stays static, the H1 is the
+												    question the searcher typed and the subline answers it. Replaces the
+												    English "IPS e.max Zirconia for {category}." line Lena flagged. */}
+												<p className="text-white/80 text-xs sm:text-sm uppercase tracking-[0.18em] mb-3">
+													{t('Limits redefined. Standards raised.')}
+												</p>
+												<h1 className="text-[1.6rem] sm:text-2xl lg:text-4xl text-white font-bold leading-tight">
+													{conv.heroHeadline}
+												</h1>
+												<p className="text-white text-base sm:text-base md:text-lg lg:text-xl mt-3 font-light leading-snug md:leading-tight">
+													{conv.heroDescription}
+												</p>
+											</>
+										) : (
+											<>
 										<h2 className="text-[1.75rem] sm:text-2xl lg:text-4xl text-white font-light leading-tight">
 											{t('Limits')} <br></br>{t('redefined.')}
 											<div className="font-bold text-[2rem] sm:text-3xl lg:text-5xl text-white">{t('Standards raised.')}</div>
@@ -903,7 +969,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 										<h1 className="text-white text-base sm:text-base md:text-lg lg:text-xl mt-2 font-light leading-snug md:leading-tight">
 											{htmlContent?.category?.name ? (
 												<>
-													IPS e.max Zirconia for {htmlContent.category.name}.
+													IPS e.max Zirconia für {htmlContent.category.name}.
 												</>
 											) : (
 												<>
@@ -911,6 +977,8 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 												</>
 											)}
 										</h1>
+											</>
+										)}
 
 										<div className="flex flex-wrap mb-2 mt-5 sm:mt-6 lg:mt-8 overflow-hidden items-center gap-4 sm:gap-6">
 											<button
@@ -944,11 +1012,14 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
             <section className="py-20 px-4 md:px-6 bg-white">
 				<div className="max-w-6xl mx-auto">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-start mb-12">
+						{/* Lena, 10 Sep: "the first part underneath the banner" should be dynamic too -
+						    most visitors are lost here, not at the "Warum" section. Term pages get their
+						    own headline and paragraph; the home page keeps the signed-off copy. */}
 						<h2 className="text-2xl md:text-3xl lg:text-[2rem] font-normal text-[#0a478b] leading-snug tracking-tight">
-							{t('Limits redefined. Standards raised.')}
+							{term?.introHeadline || t('Limits redefined. Standards raised.')}
 						</h2>
 						<p className="text-gray-600 text-base md:text-lg leading-relaxed">
-							{t('IPS e.max Zirconia is the new premium zirconium oxide — one disc for all applications, combining high-end esthetics with process-oriented efficiency for the lab and practice.')}
+							{term?.introBody || t('IPS e.max Zirconia is the new premium zirconium oxide — one disc for all applications, combining high-end esthetics with process-oriented efficiency for the lab and practice.')}
 						</p>
 					</div>
 					<p className="text-[#0a478b] text-base md:text-lg leading-relaxed">
@@ -1003,6 +1074,48 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 					</section>
 				);
 			})()}
+
+            {/* Fragen & Antworten - Lena, 10 Sep 2026: "I want to be the dating platform for
+                Zirconia" - the page should answer the question the visitor searched for, not
+                describe the product. Headline = question, subline = answer, three follow-up
+                questions per term, and a prefilled ChatGPT prompt so the same answer shows up
+                in the assistants people search with. Content lives in lib/terms.js. */}
+            {term && Array.isArray(term.faq) && term.faq.length > 0 && (
+				<section id="fragen-antworten" className="scroll-mt-24 py-20 px-4 md:px-6 bg-gray-50 border-t border-gray-100" aria-labelledby="faq-heading">
+					<div className="max-w-6xl mx-auto">
+						<p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#00a651] mb-3">{t('Questions & answers')}</p>
+						<h2 id="faq-heading" className="text-2xl md:text-3xl font-normal text-[#0a478b] mb-10 tracking-tight">
+							{t('Frequently asked about')} {term.name}
+						</h2>
+						<dl className="grid grid-cols-1 md:grid-cols-3 gap-6">
+							{term.faq.map((item, i) => (
+								<div key={i} className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+									<dt className="text-base font-semibold text-[#0a478b] mb-2">{item.q}</dt>
+									<dd className="text-sm leading-relaxed text-gray-600">{item.a}</dd>
+								</div>
+							))}
+						</dl>
+						<div className="mt-10 flex flex-wrap items-center gap-4">
+							<button
+								type="button"
+								onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+								className="inline-block px-7 py-3 rounded-full bg-[#0a478b] text-white font-bold text-base transition-all shadow-lg hover:opacity-95"
+							>
+								{t('Order now')}
+							</button>
+							<a
+								href={chatGptUrl(term)}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="inline-flex items-center gap-2 text-[#0a478b] font-medium hover:underline underline-offset-4 decoration-2"
+							>
+								{t('Ask ChatGPT this question')}
+								<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+							</a>
+						</div>
+					</div>
+				</section>
+            )}
 
             {(() => {
 				const conv = getConversionContent();
@@ -1059,7 +1172,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
             <section className="py-20 px-4 md:px-6 bg-gray-50">
 				<div className="max-w-6xl mx-auto">
 					<h2 className="text-2xl md:text-3xl font-normal text-[#0a478b] mb-3 tracking-tight">
-						{pageContext?.category ? `IPS e.max Zirconia for ${pageContext.category}` : 'IPS e.max Zirconia'}
+						{pageContext?.category ? `IPS e.max Zirconia für ${pageContext.category}` : 'IPS e.max Zirconia'}
 					</h2>
 					<p className="text-sm text-gray-600 mb-2 max-w-3xl">
 						{t('Select a product below to view details and specifications — tap or click to switch.')}
@@ -1382,9 +1495,6 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 			>
 				<div className="max-w-6xl mx-auto">
 					<h2 id="references-heading" className="sr-only">{t('References')}</h2>
-					<p className="text-xs md:text-sm text-gray-600 leading-relaxed mb-2">
-						* Cavity classes I-V according to G. V. Black
-					</p>
 					<ol
 						role="doc-endnotes"
 						className="text-xs md:text-sm text-gray-600 leading-relaxed space-y-1 list-none pl-0"
@@ -1464,25 +1574,27 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 					<div className="flex flex-col lg:flex-row lg:justify-between gap-10 lg:gap-16">
 						{/* Link columns */}
 						<div className="flex flex-col sm:flex-row gap-8 sm:gap-16">
+							{/* Open Items #4 (10 Sep): every footer link pointed at en_us / ivoclarusa.com and
+							    the social icons at the Ivoclar NA accounts, so "the links always lead to the
+							    US page". Repointed to the de_de equivalents; the four US-only rows (government
+							    contracts, US returns policy, partner agreements, agent login) have no German
+							    counterpart and are dropped. Social links go to the global Ivoclar accounts
+							    until Lena confirms the German handles. */}
 							<ul className="space-y-3 text-sm">
-								<li><a href="https://www.ivoclarusa.com/repfinder/" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Sales Rep Finder')}</a></li>
-								<li><a href="https://mydevice.ivoclar.com/?lang=en" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Device Registration')}</a></li>
-								<li><a href="https://www.ivoclar.com/en_us/tools/software-updates" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Software Updates')}</a></li>
-								<li><a href="https://www.ivoclar.com/en_us/links/download-center" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Download Center')}</a></li>
-								<li><a href="https://www.ivoclar.com/en_us/local/government-contracts" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Government Contracts')}</a></li>
-								<li><a href="https://www.ivoclar.com/en_us/local/order-delivery-and-return-policy" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Delivery and Returns Policy')}</a></li>
-								<li><a href="https://www.ivoclar.com/en_us/local/partnership-agreements" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Partner Agreements')}</a></li>
-								<li><a href="https://www.ivoclar.com/en_us/faq" target="_blank" rel="noopener noreferrer" className="hover:underline">FAQ</a></li>
+								<li><a href="https://www.ivoclar.com/de_de/contact" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Sales Rep Finder')}</a></li>
+								<li><a href="https://mydevice.ivoclar.com/?lang=de" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Device Registration')}</a></li>
+								<li><a href="https://www.ivoclar.com/de_de/tools/software-updates" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Software Updates')}</a></li>
+								<li><a href="https://www.ivoclar.com/de_de/links/download-center" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Download Center')}</a></li>
+								<li><a href="https://www.ivoclar.com/de_de/faq" target="_blank" rel="noopener noreferrer" className="hover:underline">FAQ</a></li>
 							</ul>
 							<ul className="space-y-3 text-sm">
-								<li><a href="https://www.ivoclar.com/en_us/legal/suppliers" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Suppliers')}</a></li>
-								<li><a href="https://www.ivoclar.com/en_us/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Privacy')}</a></li>
-								<li><a href="https://www.ivoclar.com/en_us/shared/imprint" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Imprint')}</a></li>
-								<li><a href="https://www.ivoclar.com/en_us/shared/cookies-declaration" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Cookies')}</a></li>
-								<li><a href="https://www.ivoclar.com/en_US/shop/agent" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Agent Login')}</a></li>
-								<li><a href="https://www.ivoclar.com/en_us/shared/sitemap" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Sitemap')}</a></li>
-								<li><a href="https://www.ivoclar.com/en_us/legal/terms-and-conditions" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Terms &amp; Conditions')}</a></li>
-								<li><a href="https://www.ivoclar.com/en_us/contact-us" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Contact Us')}</a></li>
+								<li><a href="https://www.ivoclar.com/de_de/legal/suppliers" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Suppliers')}</a></li>
+								<li><a href="https://www.ivoclar.com/de_de/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Privacy')}</a></li>
+								<li><a href="https://www.ivoclar.com/de_de/shared/imprint" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Imprint')}</a></li>
+								<li><a href="https://www.ivoclar.com/de_de/shared/cookies-declaration" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Cookies')}</a></li>
+								<li><a href="https://www.ivoclar.com/de_de/shared/sitemap" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Sitemap')}</a></li>
+								<li><a href="https://www.ivoclar.com/de_de/legal/terms-and-conditions" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Terms &amp; Conditions')}</a></li>
+								<li><a href="https://www.ivoclar.com/de_de/contact" target="_blank" rel="noopener noreferrer" className="hover:underline">{t('Contact Us')}</a></li>
 							</ul>
 						</div>
 						{/* Security + Social */}
@@ -1499,16 +1611,16 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '' }) => {
 							<div className="flex flex-col items-start lg:items-end">
 								<p className="text-white/90 text-sm font-medium mb-3">{t('Follow us on our social media')}</p>
 								<div className="flex gap-4">
-									<a href="https://www.facebook.com/Ivoclar.NA" target="_blank" rel="noopener noreferrer" className="text-white hover:opacity-80 transition-opacity" aria-label={t('Facebook')}>
+									<a href="https://www.facebook.com/ivoclar" target="_blank" rel="noopener noreferrer" className="text-white hover:opacity-80 transition-opacity" aria-label={t('Facebook')}>
 										<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
 									</a>
 									<a href="https://www.youtube.com/c/Ivoclar-global" target="_blank" rel="noopener noreferrer" className="text-white hover:opacity-80 transition-opacity" aria-label={t('YouTube')}>
 										<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
 									</a>
-									<a href="https://www.instagram.com/ivoclar.na" target="_blank" rel="noopener noreferrer" className="text-white hover:opacity-80 transition-opacity" aria-label={t('Instagram')}>
+									<a href="https://www.instagram.com/ivoclar" target="_blank" rel="noopener noreferrer" className="text-white hover:opacity-80 transition-opacity" aria-label={t('Instagram')}>
 										<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
 									</a>
-									<a href="https://www.linkedin.com/company/ivoclar-na" target="_blank" rel="noopener noreferrer" className="text-white hover:opacity-80 transition-opacity" aria-label={t('LinkedIn')}>
+									<a href="https://www.linkedin.com/company/ivoclar" target="_blank" rel="noopener noreferrer" className="text-white hover:opacity-80 transition-opacity" aria-label={t('LinkedIn')}>
 										<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
 									</a>
 								</div>
