@@ -648,8 +648,13 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 				? benefitsRaw
 				: defaultBenefits
 			).map((b) => (typeof b === 'string' ? t(b) : b));
+		// Once the Ivoclar Germany business answers with the matching category, ColdStart's
+		// trained copy wins over the local term: default_seo_secondary = the answer under the
+		// question, default_seo_body = the intro paragraph. The question, the four benefits
+		// and the FAQ have no API field yet and stay in lib/terms.js.
+		const apiCategory = term && htmlContent?.category?.slug === term.slug ? htmlContent.category : null;
 		const heroHeadline = term?.question || t(c?.hero_headline || (locationStr ? `${category} in ${shortLocation}` : category));
-		const heroDescription = term?.answer || t(c?.hero_subheadline || c?.hero_description || (locationStr ? `${category} in ${locationStr}. ${CREATOR.description}` : CREATOR.description));
+		const heroDescription = apiCategory?.default_seo_secondary || term?.answer || t(c?.hero_subheadline || c?.hero_description || (locationStr ? `${category} in ${locationStr}. ${CREATOR.description}` : CREATOR.description));
 		const heroImageUrl = c?.hero_image_url || (Array.isArray(c?.product_images) && c.product_images[0]) || null;
 		const benefitsHeadline = term?.whyHeadline || t(c?.benefits_headline || 'Why IPS e.max Zirconia?');
 		const videoUrl = c?.video_url || null;
@@ -660,9 +665,13 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 		const testimonialTitle = t(c?.testimonial_title || 'Laboratory owner');
 		const testimonialImageCaption = t(c?.testimonial_image_caption || 'All-ceramic restorations');
 		const testimonialImageUrl = c?.testimonial_image_url || null;
+		const introHeadline = apiCategory?.secondary_name || term?.introHeadline || null;
+		const introBody = apiCategory?.default_seo_body || term?.introBody || null;
 		return {
 			heroHeadline,
 			heroDescription,
+			introHeadline,
+			introBody,
 			heroImageUrl,
 			benefitsHeadline,
 			benefitsList,
@@ -1016,10 +1025,10 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 						    most visitors are lost here, not at the "Warum" section. Term pages get their
 						    own headline and paragraph; the home page keeps the signed-off copy. */}
 						<h2 className="text-2xl md:text-3xl lg:text-[2rem] font-normal text-[#0a478b] leading-snug tracking-tight">
-							{term?.introHeadline || t('Limits redefined. Standards raised.')}
+							{getConversionContent().introHeadline || t('Limits redefined. Standards raised.')}
 						</h2>
 						<p className="text-gray-600 text-base md:text-lg leading-relaxed">
-							{term?.introBody || t('IPS e.max Zirconia is the new premium zirconium oxide — one disc for all applications, combining high-end esthetics with process-oriented efficiency for the lab and practice.')}
+							{getConversionContent().introBody || t('IPS e.max Zirconia is the new premium zirconium oxide — one disc for all applications, combining high-end esthetics with process-oriented efficiency for the lab and practice.')}
 						</p>
 					</div>
 					<p className="text-[#0a478b] text-base md:text-lg leading-relaxed">

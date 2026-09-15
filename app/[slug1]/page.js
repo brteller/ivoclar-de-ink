@@ -22,7 +22,8 @@ async function loadCategory(slug) {
   if (term && term.status === 'removed') notFound();
   let data = null;
   try {
-    data = await fetchPageData({ category: term?.name || slug });
+    // The API validates `category` as a slug (exists:categories,slug), so always send the slug.
+    data = await fetchPageData({ category: term?.slug || slug });
   } catch (e) {
     console.error(e);
   }
@@ -37,15 +38,19 @@ export async function generateMetadata({ params }) {
   const { term, data } = await loadCategory(p.slug1);
   const base = getRouteMetadataFromParams(paramsNorm, data, origin);
   if (!term) return base;
-  // Per-term SEO title / description from the Categories sheet, as reviewed on 10 Sep.
+  // Per-term SEO title / description: ColdStart's category copy when the Germany business
+  // answers for this slug, otherwise the Categories sheet values as reviewed on 10 Sep.
+  const apiCategory = data?.category?.slug === term.slug ? data.category : null;
+  const title = apiCategory?.default_seo_title || term.seoTitle;
+  const description = apiCategory?.default_seo_description || term.seoDescription;
   const canonical = `${origin}/${term.slug}`;
   return {
     ...base,
-    title: term.seoTitle,
-    description: term.seoDescription,
+    title,
+    description,
     alternates: { canonical },
-    openGraph: { ...(base.openGraph || {}), title: term.seoTitle, description: term.seoDescription, url: canonical },
-    twitter: { ...(base.twitter || {}), title: term.seoTitle, description: term.seoDescription },
+    openGraph: { ...(base.openGraph || {}), title, description, url: canonical },
+    twitter: { ...(base.twitter || {}), title, description },
   };
 }
 
