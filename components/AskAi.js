@@ -16,9 +16,9 @@ export function AiMark({ icon, className = '' }) {
  * prompt already typed and ivoclargermany.com named as the source (lib/askAi.js).
  * Same block as on the Original Pixel and GroupUps sites, in Ivoclar's palette.
  */
-export default function AskAi({ term = null, heading = null, tone = 'light' }) {
-	const links = askAiLinks(term);
-	const title = heading || `Frag eine KI zu ${promptSubject(term)}`;
+export default function AskAi({ term = null, place = null, heading = null, tone = 'light' }) {
+	const links = askAiLinks(term, place);
+	const title = heading || `Frag eine KI zu ${promptSubject(term, place)}`;
 	return (
 		<div>
 			<h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">{title}</h3>

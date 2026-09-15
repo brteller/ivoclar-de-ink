@@ -14,6 +14,7 @@ import { translate } from '@/lib/i18n';
 import { renderWithCitations, TETRIC_FOOTNOTES } from '@/lib/citations';
 import { termNavigationItems } from '@/lib/terms';
 import AskAi from '@/components/AskAi';
+import { geoContext, geoCopy, geoNavigationItems } from '@/lib/geo';
 
 /**
  * Per-category hero treatment (Lena, 10 Sep 2026: "if somebody is looking for this and
@@ -308,6 +309,13 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 	};
 
 	const pageContext = getPageContext();
+	// Geo template (Brandon, 15 Sep 2026): location pages follow the home page design with
+	// the place written into headline, intro, benefits and map. lib/geo.js turns
+	// ColdStart's English place names into German and carries the copy per category.
+	const geo = ['city-category', 'state-category', 'country-category'].includes(pageContext.type)
+		? geoContext(htmlContent, pathname)
+		: null;
+	const geoText = geoCopy(geo);
 	const isHomePage = pageContext.type === 'home';
 	const isSubPage = !isHomePage;
 
@@ -420,6 +428,8 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 		// The bottom pills are the confirmed German search terms (10 Sep review), not the
 		// categories the API returns - until the Germany business has its own ColdStart key
 		// the API still answers with the North America (Tetric) category list.
+		const geoNav = geoNavigationItems(htmlContent, geo);
+		if (geoNav && geoNav.length > 0) return geoNav;
 		const termNav = termNavigationItems();
 		if (termNav.length > 0) return termNav;
 		if (!htmlContent) return [];
@@ -566,6 +576,13 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 			canonical: `${origin || (typeof window !== 'undefined' ? window.location.origin : '')}${pathname || (typeof window !== 'undefined' ? window.location.pathname : '')}`
 		};
 
+		if (geoText) {
+			return {
+				title: geoText.seoTitle,
+				description: geoText.seoDescription,
+				canonical: `${origin || (typeof window !== 'undefined' ? window.location.origin : '')}${pathname || ''}`
+			};
+		}
 		const { locationStr } = getLocationString(pageContext);
 		const category = pageContext.category || CREATOR.name;
 
@@ -643,7 +660,9 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 		// Term pages (Lena, 10 Sep): headline = the question the searcher typed, subline = the
 		// answer, and the four "Warum" benefits are written for that term. API copy stays the
 		// fallback for everything the term does not define.
-		const benefitsList = Array.isArray(term?.benefits) && term.benefits.length > 0
+		const benefitsList = Array.isArray(geoText?.benefits)
+			? geoText.benefits
+			: Array.isArray(term?.benefits) && term.benefits.length > 0
 			? term.benefits
 			: (Array.isArray(benefitsRaw) && benefitsRaw.length > 0
 				? benefitsRaw
@@ -654,10 +673,10 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 		// question, default_seo_body = the intro paragraph. The question, the four benefits
 		// and the FAQ have no API field yet and stay in lib/terms.js.
 		const apiCategory = term && htmlContent?.category?.slug === term.slug ? htmlContent.category : null;
-		const heroHeadline = term?.question || t(c?.hero_headline || (locationStr ? `${category} in ${shortLocation}` : category));
-		const heroDescription = apiCategory?.default_seo_secondary || term?.answer || t(c?.hero_subheadline || c?.hero_description || (locationStr ? `${category} in ${locationStr}. ${CREATOR.description}` : CREATOR.description));
+		const heroHeadline = geoText?.h1 || term?.question || t(c?.hero_headline || (locationStr ? `${category} in ${shortLocation}` : category));
+		const heroDescription = geoText?.subline || apiCategory?.default_seo_secondary || term?.answer || t(c?.hero_subheadline || c?.hero_description || (locationStr ? `${category} in ${locationStr}. ${CREATOR.description}` : CREATOR.description));
 		const heroImageUrl = c?.hero_image_url || (Array.isArray(c?.product_images) && c.product_images[0]) || null;
-		const benefitsHeadline = term?.whyHeadline || t(c?.benefits_headline || 'Why IPS e.max Zirconia?');
+		const benefitsHeadline = geoText?.whyHeadline || term?.whyHeadline || t(c?.benefits_headline || 'Why IPS e.max Zirconia?');
 		const videoUrl = c?.video_url || null;
 		const infographicUrl = c?.infographic_url || c?.secondary_image_url || null;
 		const ctaText = t(c?.cta_text || 'Order now');
@@ -666,8 +685,8 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 		const testimonialTitle = t(c?.testimonial_title || 'Laboratory owner');
 		const testimonialImageCaption = t(c?.testimonial_image_caption || 'All-ceramic restorations');
 		const testimonialImageUrl = c?.testimonial_image_url || null;
-		const introHeadline = apiCategory?.secondary_name || term?.introHeadline || null;
-		const introBody = apiCategory?.default_seo_body || term?.introBody || null;
+		const introHeadline = geoText?.introHeadline || apiCategory?.secondary_name || term?.introHeadline || null;
+		const introBody = geoText?.introBody || apiCategory?.default_seo_body || term?.introBody || null;
 		return {
 			heroHeadline,
 			heroDescription,
@@ -701,7 +720,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 		htmlContent?.state?.longitude ?? htmlContent?.state?.lng ??
 		htmlContent?.location?.longitude ?? htmlContent?.location?.lng ?? null;
 	const hasGeo = geoLat != null && geoLng != null && geoLat !== '' && geoLng !== '';
-	const mapQuery = hasGeo ? `${geoLat},${geoLng}` : mapLocationStr;
+	const mapQuery = hasGeo ? `${geoLat},${geoLng}` : (geo?.placeLong || mapLocationStr);
 	const mapSrc = mapQuery
 		? `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=${hasGeo ? 11 : 6}&output=embed`
 		: '';
@@ -744,11 +763,23 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 			};
 		}
 		
+		const breadcrumb = geo
+			? {
+					"@type": "BreadcrumbList",
+					"itemListElement": geo.crumbs.map((c, i) => ({
+						"@type": "ListItem",
+						"position": i + 1,
+						"name": c.name,
+						"item": `${origin || ''}${c.href}`,
+					})),
+				}
+			: null;
 		const data = {
 			"@context": "https://schema.org",
 			"@type": "Service",
 			"name": seoContent.title,
 			"description": seoContent.description,
+			...(breadcrumb ? { "breadcrumb": breadcrumb } : {}),
 			"provider": {
 				"@type": "Organization",
 				"name": CREATOR.name,
@@ -977,7 +1008,9 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 											<div className="font-bold text-[2rem] sm:text-3xl lg:text-5xl text-white">{t('Standards raised.')}</div>
 										</h2>
 										<h1 className="text-white text-base sm:text-base md:text-lg lg:text-xl mt-2 font-light leading-snug md:leading-tight">
-											{htmlContent?.category?.name ? (
+											{geoText ? (
+												geoText.h1
+											) : htmlContent?.category?.name ? (
 												<>
 													IPS e.max Zirconia für {htmlContent.category.name}.
 												</>
@@ -987,6 +1020,9 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 												</>
 											)}
 										</h1>
+										{geoText && (
+											<p className="text-white/85 text-sm sm:text-base mt-3 font-light leading-snug">{geoText.subline}</p>
+										)}
 											</>
 										)}
 
@@ -1017,6 +1053,24 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 					</section>
 				);
 			})()}
+
+            {/* Breadcrumb on geo pages: Startseite › Kategorie › Land › Bundesland › Stadt */}
+            {geo && (
+				<nav aria-label="Breadcrumb" className="px-4 md:px-6 bg-white pt-6">
+					<ol className="max-w-6xl mx-auto flex flex-wrap items-center gap-2 text-sm text-gray-500">
+						{geo.crumbs.map((c, i) => (
+							<li key={c.href} className="flex items-center gap-2">
+								{i > 0 && <span aria-hidden>›</span>}
+								{i === geo.crumbs.length - 1 ? (
+									<span className="text-[#0a478b] font-medium">{c.name}</span>
+								) : (
+									<a href={c.href} className="hover:underline underline-offset-4">{c.name}</a>
+								)}
+							</li>
+						))}
+					</ol>
+				</nav>
+            )}
 
             {/* Intro copy: two-column (heading + body) + full-width blue paragraph on white */}
             <section className="py-20 px-4 md:px-6 bg-white">
@@ -1182,7 +1236,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
             <section className="py-20 px-4 md:px-6 bg-gray-50">
 				<div className="max-w-6xl mx-auto">
 					<h2 className="text-2xl md:text-3xl font-normal text-[#0a478b] mb-3 tracking-tight">
-						{pageContext?.category ? `IPS e.max Zirconia für ${pageContext.category}` : 'IPS e.max Zirconia'}
+						{geoText ? geoText.productsHeadline : pageContext?.category ? `IPS e.max Zirconia für ${pageContext.category}` : 'IPS e.max Zirconia'}
 					</h2>
 					<p className="text-sm text-gray-600 mb-2 max-w-3xl">
 						{t('Select a product below to view details and specifications — tap or click to switch.')}
@@ -1434,17 +1488,17 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 
             {/* Location map — location-based subpages only; coordinates from the ColdStart API */}
             {isLocationPage && mapSrc && (
-			<section className="py-20 px-4 md:px-6 bg-white border-t border-gray-100" aria-label={`Map of ${mapLocationStr}`}>
+			<section className="py-20 px-4 md:px-6 bg-white border-t border-gray-100" aria-label={`Karte: ${geo?.placeLong || mapLocationStr}`}>
 				<div className="max-w-6xl mx-auto">
 					<h2 className="text-2xl md:text-3xl lg:text-[2rem] font-normal text-[#0a478b] mb-3 tracking-tight">
-						{CREATOR.shortName} in {mapLocationStr}
+						{geoText ? geoText.mapHeadline : `${CREATOR.shortName} in ${mapLocationStr}`}
 					</h2>
 					<p className="text-gray-600 text-lg mb-8 max-w-3xl">
-						Supporting dental laboratories and practice labs in {mapLocationStr} with the Ivoclar digital fixed prosthetics workflow — from design and milling through to sintering and finishing.
+						{geoText ? geoText.mapIntro : `Wir unterstützen Dentallabore und Praxislabore in ${mapLocationStr} mit dem digitalen Workflow für festsitzenden Zahnersatz – vom Design und Fräsen bis zum Sintern und Finishing.`}
 					</p>
 					<div className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm bg-white">
 						<iframe
-							title={`Map of ${mapLocationStr}`}
+							title={`Karte: ${geo?.placeLong || mapLocationStr}`}
 							src={mapSrc}
 							className="w-full block min-h-[320px] md:min-h-[440px]"
 							style={{ border: 0 }}
@@ -1481,7 +1535,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 				<div className="max-w-6xl mx-auto">
 					{!term && (
 						<div className="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-							<AskAi tone="muted" />
+							<AskAi tone="muted" term={geo?.term || null} place={geo?.place || null} />
 							<a href="/ki-fragen" className="text-[#0a478b] font-medium hover:underline underline-offset-4 decoration-2">
 								{t('All questions for AI assistants')}
 							</a>
