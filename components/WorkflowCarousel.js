@@ -45,9 +45,10 @@ function Chevron({ dir = 'left' }) {
 	);
 }
 
-export default function WorkflowCarousel({ steps = DEFAULT_STEPS, lang = 'de' }) {
+export default function WorkflowCarousel({ steps = DEFAULT_STEPS, lang = 'de', initialIndex = 0 }) {
 	const t = (s) => translate(lang, s);
-	const [index, setIndex] = useState(0);
+	// Workflow-layout pages open on their own step (Fräsen, Sintern, ...): lib/terms.js `workflowStep`.
+	const [index, setIndex] = useState(Math.min(Math.max(0, initialIndex), steps.length - 1));
 	const count = steps.length;
 	if (!count) return null;
 	const current = steps[index];

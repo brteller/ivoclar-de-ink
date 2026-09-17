@@ -11,8 +11,13 @@ const REMOVED = new Set(TERMS.filter((t) => t.status === 'removed').map((t) => `
 
 export function middleware(request) {
 	const { pathname } = request.nextUrl;
-	if (REMOVED.has(pathname.toLowerCase().replace(/\/+$/, ''))) {
+	const path = pathname.toLowerCase().replace(/\/+$/, '');
+	if (REMOVED.has(path)) {
 		return NextResponse.redirect(new URL('/', request.url), 308);
+	}
+	// 17 Sep: the questions hub moved from /ki-fragen to /fragen-antworten.
+	if (path === '/ki-fragen') {
+		return NextResponse.redirect(new URL('/fragen-antworten', request.url), 308);
 	}
 	return NextResponse.next();
 }

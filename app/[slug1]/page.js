@@ -54,8 +54,13 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function CategoryPage({ params }) {
+export default async function CategoryPage({ params, searchParams }) {
   const p = await params;
+  // Review switches (Lena, 17 Sep): ?layout=antwort|vergleich|workflow|indikation previews a
+  // template, ?variante=ki shows the explicit-AI FAQ format next to the Ivoclar one.
+  const sp = (await searchParams) || {};
+  const layoutOverride = typeof sp.layout === 'string' ? sp.layout : null;
+  const faqStyle = sp.variante === 'ki' ? 'ki' : 'ivoclar';
   const headersList = await headers();
   const origin = getOrigin(headersList);
   const { term, data } = await loadCategory(p.slug1);
@@ -66,6 +71,8 @@ export default async function CategoryPage({ params }) {
       pathname={pathname}
       origin={origin}
       term={term}
+      layoutOverride={layoutOverride}
+      faqStyle={faqStyle}
     />
   );
 }

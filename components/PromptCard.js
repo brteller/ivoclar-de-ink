@@ -8,7 +8,7 @@ import { AI_ICON_PATHS, AI_ICON_VIEWBOX } from '@/lib/aiIcons';
  * in each assistant. Links are built on the server (lib/askAi.js) so the prompt
  * text and the link text can never drift apart.
  */
-export default function PromptCard({ label, prompt, links, href = null }) {
+export default function PromptCard({ label, answer = null, prompt, links, href = null }) {
 	const [copied, setCopied] = useState(false);
 
 	async function copy() {
@@ -32,7 +32,11 @@ export default function PromptCard({ label, prompt, links, href = null }) {
 					label
 				)}
 			</h3>
-			<p className="mt-4 flex-1 rounded-xl bg-gray-50 p-4 text-sm leading-relaxed text-gray-700">{prompt}</p>
+			{answer && <p className="mt-3 text-sm leading-relaxed text-gray-700">{answer}</p>}
+			<details className="mt-4 flex-1 rounded-xl bg-gray-50 p-4 text-sm leading-relaxed text-gray-600">
+				<summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">Frage für KI-Assistenten anzeigen</summary>
+				<p className="mt-3">{prompt}</p>
+			</details>
 			<div className="mt-5 flex flex-wrap items-center gap-2">
 				{links.map((l) => (
 					<a
@@ -55,7 +59,7 @@ export default function PromptCard({ label, prompt, links, href = null }) {
 					onClick={copy}
 					className="ml-auto rounded-full border border-gray-300 px-4 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-[#0a478b] hover:text-[#0a478b]"
 				>
-					{copied ? 'Kopiert' : 'Prompt kopieren'}
+					{copied ? 'Kopiert' : 'Frage kopieren'}
 				</button>
 			</div>
 		</article>

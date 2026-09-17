@@ -23,8 +23,13 @@ export async function generateMetadata({ params }) {
   return getRouteMetadataFromParams(paramsNorm, data, origin);
 }
 
-export default async function StateCategoryPage({ params }) {
+export default async function StateCategoryPage({ params, searchParams }) {
   const p = await params;
+  // Review switches (Lena, 17 Sep): ?layout=antwort|vergleich|workflow|indikation previews a
+  // template, ?variante=ki shows the explicit-AI FAQ format next to the Ivoclar one.
+  const sp = (await searchParams) || {};
+  const layoutOverride = typeof sp.layout === 'string' ? sp.layout : null;
+  const faqStyle = sp.variante === 'ki' ? 'ki' : 'ivoclar';
   const paramsNorm = { country: p.slug1, state: p.slug2, category: p.slug3 };
   const headersList = await headers();
   const origin = getOrigin(headersList);
@@ -40,6 +45,8 @@ export default async function StateCategoryPage({ params }) {
       htmlContent={data}
       pathname={pathname}
       origin={origin}
+      layoutOverride={layoutOverride}
+      faqStyle={faqStyle}
     />
   );
 }

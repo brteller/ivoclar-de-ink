@@ -14,6 +14,9 @@ import { translate } from '@/lib/i18n';
 import { renderWithCitations, TETRIC_FOOTNOTES } from '@/lib/citations';
 import { termNavigationItems } from '@/lib/terms';
 import AskAi from '@/components/AskAi';
+import FaqSection from '@/components/FaqSection';
+import CompareSection from '@/components/CompareSection';
+import IndicationSection from '@/components/IndicationSection';
 import { geoContext, geoCopy, geoNavigationItems } from '@/lib/geo';
 
 /**
@@ -230,7 +233,21 @@ function getSuperheroTestimonialIds(htmlContent, pageContext, categorySlugKey) {
 
 const SHOW_DENTIST_TESTIMONIALS = false;
 
-const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) => {
+/**
+ * Section order per template. Four term templates plus geo and home. Lena, 17 Sep 2026:
+ * "the sections all feel the same" - the order and the lead block now change per term
+ * group, not only the copy. `?layout=<key>` previews any template on any term page.
+ */
+const LAYOUTS = {
+	home: ['hero', 'intro', 'warum', 'experten', 'produkte', 'media', 'angebot', 'form', 'workflow', 'pills'],
+	antwort: ['hero', 'faq', 'intro', 'warum', 'produkte', 'experten', 'angebot', 'form', 'workflow', 'pills'],
+	vergleich: ['hero', 'intro', 'vergleich', 'warum', 'faq', 'produkte', 'angebot', 'form', 'workflow', 'pills'],
+	workflow: ['hero', 'intro', 'workflow', 'warum', 'faq', 'produkte', 'angebot', 'form', 'experten', 'pills'],
+	indikation: ['hero', 'intro', 'indikation', 'warum', 'faq', 'produkte', 'angebot', 'form', 'workflow', 'pills'],
+	geo: ['hero', 'breadcrumb', 'intro', 'warum', 'experten', 'produkte', 'map', 'faq', 'angebot', 'form', 'workflow', 'pills'],
+};
+
+const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null, layoutOverride = null, faqStyle = 'ivoclar' }) => {
 	const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 	const [lastScrollY, setLastScrollY] = useState(0);
 	const [selectedProductIndex, setSelectedProductIndex] = useState(0);
@@ -316,6 +333,14 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 		? geoContext(htmlContent, pathname)
 		: null;
 	const geoText = geoCopy(geo);
+	const layoutKey = LAYOUTS[layoutOverride]
+		? layoutOverride
+		: geo
+		? 'geo'
+		: term
+		? (LAYOUTS[term.layout] ? term.layout : 'antwort')
+		: 'home';
+	const sectionOrder = LAYOUTS[layoutKey];
 	const isHomePage = pageContext.type === 'home';
 	const isSubPage = !isHomePage;
 
@@ -827,52 +852,9 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 		return !hideCategories.some(keyword => categoryName.includes(keyword));
 	};
 
-	return (
-        <div>
-            {/* Structured Data - metadata is set by Next.js generateMetadata */}
-            {getStructuredData() && (
-                <script type="application/ld+json">
-                    {JSON.stringify(getStructuredData())}
-                </script>
-            )}
-
-            {/* Ivoclar-style Header */}
-            <header
-                className={`bg-white border-b border-gray-200 sticky top-0 z-50 transition-transform duration-300 ${
-                    isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
-                }`}
-            >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16 lg:h-18 gap-4">
-                        {/* Logo */}
-                        <a href="/" className="flex-shrink-0 inline-flex items-center" aria-label={t('Ivoclar home')}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                                src="/ivoclar-logo.svg"
-                                alt={t('Ivoclar')}
-                                className="h-8 w-auto md:h-9"
-                            />
-                        </a>
-
-                        {/* Right: Search, Language, primary CTA */}
-                        <div className="flex items-center gap-5 flex-shrink-0 ml-auto">
-                            {/* Ivoclar feedback 2026-09 slide 1: DE/EN language toggle removed, and the
-                                "Zirkonoxid-Angebot" nav link marked 'Remove' on the same slide is gone too
-                                (Feedback Tracker row 2). The order CTA scrolls to the on-page form. */}
-                            <button
-                                type="button"
-                                onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-                                className="bg-[#0a478b] hover:bg-[#083a70] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
-                            >
-                                {t('Order now')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            
-
+	const sections = {
+		hero: (
+			<>
             {/* Hero: full-bleed image with overlaid text and CTA */}
             {(() => {
 				const conv = getConversionContent();
@@ -1053,7 +1035,10 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 					</section>
 				);
 			})()}
-
+			</>
+		),
+		breadcrumb: (
+			<>
             {/* Breadcrumb on geo pages: Startseite › Kategorie › Land › Bundesland › Stadt */}
             {geo && (
 				<nav aria-label="Breadcrumb" className="px-4 md:px-6 bg-white pt-6">
@@ -1071,7 +1056,10 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 					</ol>
 				</nav>
             )}
-
+			</>
+		),
+		intro: (
+			<>
             {/* Intro copy: two-column (heading + body) + full-width blue paragraph on white */}
             <section className="py-20 px-4 md:px-6 bg-white">
 				<div className="max-w-6xl mx-auto">
@@ -1091,7 +1079,10 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 					</p>
 				</div>
 			</section>
-
+			</>
+		),
+		warum: (
+			<>
             {/* Conversion: Key benefits */}
             {(() => {
 				const conv = getConversionContent();
@@ -1138,49 +1129,29 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 					</section>
 				);
 			})()}
-
-            {/* Fragen & Antworten - Lena, 10 Sep 2026: "I want to be the dating platform for
-                Zirconia" - the page should answer the question the visitor searched for, not
-                describe the product. Headline = question, subline = answer, three follow-up
-                questions per term, and a prefilled ChatGPT prompt so the same answer shows up
-                in the assistants people search with. Content lives in lib/terms.js. */}
-            {term && Array.isArray(term.faq) && term.faq.length > 0 && (
-				<section id="fragen-antworten" className="scroll-mt-24 py-20 px-4 md:px-6 bg-gray-50 border-t border-gray-100" aria-labelledby="faq-heading">
-					<div className="max-w-6xl mx-auto">
-						<p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#00a651] mb-3">{t('Questions & answers')}</p>
-						<h2 id="faq-heading" className="text-2xl md:text-3xl font-normal text-[#0a478b] mb-10 tracking-tight">
-							{t('Frequently asked about')} {term.name}
-						</h2>
-						<dl className="grid grid-cols-1 md:grid-cols-3 gap-6">
-							{term.faq.map((item, i) => (
-								<div key={i} className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-									<dt className="text-base font-semibold text-[#0a478b] mb-2">{item.q}</dt>
-									<dd className="text-sm leading-relaxed text-gray-600">{item.a}</dd>
-								</div>
-							))}
-						</dl>
-						{/* "Frag eine KI": the same question, opened in ChatGPT / Claude / Gemini / Grok /
-						    Perplexity with this page named as the source - the pattern from the GroupUps and
-						    Original Pixel builds (lib/askAi.js). /ki-fragen lists every prompt on the site. */}
-						<div className="mt-10 grid grid-cols-1 md:grid-cols-[1fr,auto] gap-8 items-end">
-							<AskAi term={term} tone="muted" />
-							<div className="flex flex-wrap items-center gap-4">
-								<button
-									type="button"
-									onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-									className="inline-block px-7 py-3 rounded-full bg-[#0a478b] text-white font-bold text-base transition-all shadow-lg hover:opacity-95"
-								>
-									{t('Order now')}
-								</button>
-								<a href="/ki-fragen" className="text-[#0a478b] font-medium hover:underline underline-offset-4 decoration-2">
-									{t('All questions for AI assistants')}
-								</a>
-							</div>
-						</div>
-					</div>
-				</section>
-            )}
-
+			</>
+		),
+		faq: (
+			<>
+            {/* Fragen & Antworten - see components/FaqSection.js for both formats. Geo pages get the
+                term's questions with the place in the heading. */}
+            <FaqSection term={term || geo?.term || null} place={geo?.place || null} style={faqStyle} t={t} />
+			</>
+		),
+		vergleich: (
+			<>
+            {/* Vergleich layout: decision table from term.compare */}
+            <CompareSection term={term} />
+			</>
+		),
+		indikation: (
+			<>
+            {/* Indikation layout: indication grid with the page's indication opened */}
+            <IndicationSection term={term} />
+			</>
+		),
+		experten: (
+			<>
             {(() => {
 				const conv = getConversionContent();
 				return (
@@ -1231,7 +1202,10 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 					</section>
 				);
 			})()}
-
+			</>
+		),
+		produkte: (
+			<>
             {/* Product lines — tabs, copy, image, specs, primary CTA link */}
             <section className="py-20 px-4 md:px-6 bg-gray-50">
 				<div className="max-w-6xl mx-auto">
@@ -1448,10 +1422,16 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 					})() : null}
 				</div>
 			</section>
-
+			</>
+		),
+		testimonials: (
+			<>
             {/* Dentist testimonials are extracted to a reusable component and disabled for now. */}
             {SHOW_DENTIST_TESTIMONIALS ? <DentistTestimonials /> : null}
-
+			</>
+		),
+		media: (
+			<>
             {/* Conversion: Optional video or infographic */}
             {(() => {
 				const conv = getConversionContent();
@@ -1485,7 +1465,10 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 				}
 				return null;
 			})()}
-
+			</>
+		),
+		map: (
+			<>
             {/* Location map — location-based subpages only; coordinates from the ColdStart API */}
             {isLocationPage && mapSrc && (
 			<section className="py-20 px-4 md:px-6 bg-white border-t border-gray-100" aria-label={`Karte: ${geo?.placeLong || mapLocationStr}`}>
@@ -1510,34 +1493,45 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 				</div>
 			</section>
 			)}
-
+			</>
+		),
+		angebot: (
+			<>
             {/* Zirconia new-customer offer — replaces the on-page order form per Ivoclar review 2026-08-20 */}
             <ZirconiaOfferCta lang={lang} />
-
+			</>
+		),
+		form: (
+			<>
             {/* Ivoclar 2026-08-26 slide 10: "incorporate the form so that a final check-out
                 within one page is possible" — form restored directly below the offer CTA. */}
             <LeadCaptureForm pathname={pathname} pageContext={pageContext} lang={lang} />
-
+			</>
+		),
+		workflow: (
+			<>
             {/* Digital Fixed Prosthetics Workflow — moved below the offer per Ivoclar review 2026-08-20
                 ("Move this bracket to the end (after the form)") */}
             <section className="py-20 px-4 md:px-6 bg-gray-50">
 				<div className="max-w-6xl mx-auto">
 					<h2 className="text-2xl md:text-3xl lg:text-[2rem] font-normal text-[#0a478b] mb-3 tracking-tight">{t('The Digital Fixed Prosthetics Workflow')}</h2>
 					<p className="text-gray-600 text-lg mb-12 max-w-3xl">{t('IPS e.max Zirconia and PrograMill 7 belong to one seamless workflow — from design to finished restoration.')}</p>
-					<WorkflowCarousel lang={lang} />
+					<WorkflowCarousel lang={lang} initialIndex={term?.workflowStep ?? 0} />
 				</div>
 			</section>
-
-
+			</>
+		),
+		pills: (
+			<>
             {/* Pills: last section before footer — SEO: category name as link text and href = category page URL */}
             {getNavigationItems().length > 0 && (
 			<section className="py-16 px-4 md:px-6 bg-gray-50 border-t border-gray-200">
 				<div className="max-w-6xl mx-auto">
-					{!term && (
-						<div className="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-							<AskAi tone="muted" term={geo?.term || null} place={geo?.place || null} />
-							<a href="/ki-fragen" className="text-[#0a478b] font-medium hover:underline underline-offset-4 decoration-2">
-								{t('All questions for AI assistants')}
+					{!term && !geo && (
+						<div className="mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+							<AskAi compact />
+							<a href="/fragen-antworten" className="text-[#0a478b] font-medium hover:underline underline-offset-4 decoration-2">
+								Alle Fragen & Antworten
 							</a>
 						</div>
 					)}
@@ -1555,6 +1549,57 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 				</div>
 			</section>
             )}
+			</>
+		),
+	};
+
+	return (
+        <div>
+            {/* Structured Data - metadata is set by Next.js generateMetadata */}
+            {getStructuredData() && (
+                <script type="application/ld+json">
+                    {JSON.stringify(getStructuredData())}
+                </script>
+            )}
+
+            {/* Ivoclar-style Header */}
+            <header
+                className={`bg-white border-b border-gray-200 sticky top-0 z-50 transition-transform duration-300 ${
+                    isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
+                }`}
+            >
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16 lg:h-18 gap-4">
+                        {/* Logo */}
+                        <a href="/" className="flex-shrink-0 inline-flex items-center" aria-label={t('Ivoclar home')}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src="/ivoclar-logo.svg"
+                                alt={t('Ivoclar')}
+                                className="h-8 w-auto md:h-9"
+                            />
+                        </a>
+
+                        {/* Right: Search, Language, primary CTA */}
+                        <div className="flex items-center gap-5 flex-shrink-0 ml-auto">
+                            {/* Ivoclar feedback 2026-09 slide 1: DE/EN language toggle removed, and the
+                                "Zirkonoxid-Angebot" nav link marked 'Remove' on the same slide is gone too
+                                (Feedback Tracker row 2). The order CTA scrolls to the on-page form. */}
+                            <button
+                                type="button"
+                                onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                                className="bg-[#0a478b] hover:bg-[#083a70] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+                            >
+                                {t('Order now')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            {sectionOrder.map((key) => (
+                <React.Fragment key={key}>{sections[key]}</React.Fragment>
+            ))}
 
 			{/* References / Footnotes — semantic <ol> using DPUB-ARIA doc-endnotes.
 			    Each inline [N] marker in body text renders as a <sup role="doc-noteref">
@@ -1715,7 +1760,6 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null }) 
 					</div>
 				</div>
 			</footer>
-            
         </div>
     );
 };
