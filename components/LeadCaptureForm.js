@@ -278,7 +278,7 @@ export default function LeadCaptureForm({ lang = 'de' }) {
             </label>
           </div>
 
-          <p className="text-xs text-gray-500">{t('This offer is available in Germany and Austria only.')}</p>
+          {/* Lena, 1 Sep 2026 (slide 6): "Dieses Angebot ist nur in Deutschland und Österreich verfügbar" removed; the Land dropdown covers it. */}
 
           {errorMessage && (
             <p className="text-sm text-red-600" role="alert">
