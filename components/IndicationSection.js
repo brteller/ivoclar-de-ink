@@ -4,14 +4,14 @@
  * Implantatprothetik; the facts match the product tab on the same page.
  */
 export const INDICATIONS = [
-	{ key: 'veneers', name: 'Veneers', note: 'Dünne Veneers mit hoher Transluzenz im 5Y-PSZ-Anteil der Scheibe.' },
+	{ key: 'veneers', name: 'Veneers', note: 'Freigegeben ab 0,5 mm; hohe Transluzenz im 5Y-PSZ-Anteil der Scheibe. Befestigung mit Variolink Esthetic.' },
 	{ key: 'inlays-onlays', name: 'Inlays & Onlays', note: 'Monolithisch, ohne Verblendung – Sintern ab 0:58 h.' },
 	{ key: 'kronen', name: 'Einzelkronen', note: 'Die häufigste Indikation im digitalen Labor; GTx-Gradient für den natürlichen Übergang.' },
-	{ key: 'bruecken-3', name: '3-gliedrige Brücken', note: 'Speed-Sintern in 0:58 h.' },
-	{ key: 'bruecken-mehr', name: 'Mehrgliedrige Brücken', note: 'Weitspannig, bis Full-Arch in 2:57 h gesintert.' },
-	{ key: 'freiend-klebe', name: 'Freiend- und Klebebrücken', note: 'Freigegeben aus derselben Scheibe.' },
-	{ key: 'hybrid', name: 'Hybridversorgungen auf Ti-Basis', note: 'Verschraubt; Opaque Liquid maskiert die Ti-Basis von innen.' },
-	{ key: 'all-on-x', name: 'All-on-X', note: 'Validiert unter realen Bedingungen und Worst-Case-Protokollen.' },
+	{ key: 'bruecken-3', name: '3-gliedrige Brücken', note: 'Speed-Sintern in 0:58 h – zusammen mit Einzelkronen.' },
+	{ key: 'bruecken-mehr', name: 'Mehrgliedrige Brücken', note: 'Bis zu 2 verbundene Pontics, im Frontzahnbereich bis zu 4; bis Full-Arch in 2:57 h gesintert.' },
+	{ key: 'freiend-klebe', name: 'Freiend- und Klebebrücken', note: 'Cantilever-Brücke mit 1 Pontic, Adhäsiv-/Maryland-Brücke mit 1 Flügel.' },
+	{ key: 'hybrid', name: 'Hybridversorgungen auf Ti-Basis', note: 'Verschraubt auf zertifiziertem Abutment (Ti-Base, Multi-Unit); Opaque Liquid maskiert die Ti-Basis von innen.' },
+	{ key: 'all-on-x', name: 'All-on-X', note: 'Validiert unter realen Bedingungen und Worst-Case-Protokollen; Full-Arch in 2:57 h.' },
 ];
 
 export default function IndicationSection({ term }) {
