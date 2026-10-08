@@ -38,11 +38,11 @@ export async function generateMetadata({ params }) {
   const { term, data } = await loadCategory(p.slug1);
   const base = getRouteMetadataFromParams(paramsNorm, data, origin);
   if (!term) return base;
-  // Per-term SEO title / description: ColdStart's category copy when the Germany business
-  // answers for this slug, otherwise the Categories sheet values as reviewed on 10 Sep.
+  // Per-term SEO title / description: the reviewed values in lib/terms.js, with ColdStart's
+  // category copy as the fallback (7 Oct: the API copy was older than the sheet).
   const apiCategory = data?.category?.slug === term.slug ? data.category : null;
-  const title = apiCategory?.default_seo_title || term.seoTitle;
-  const description = apiCategory?.default_seo_description || term.seoDescription;
+  const title = term.seoTitle || apiCategory?.default_seo_title;
+  const description = term.seoDescription || apiCategory?.default_seo_description;
   const canonical = `${origin}/${term.slug}`;
   return {
     ...base,

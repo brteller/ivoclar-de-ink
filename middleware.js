@@ -7,12 +7,16 @@ import { TERMS } from '@/lib/terms';
  * has already started streaming through app/loading.js by then, so the status stays 200 -
  * and a permanent redirect is the honest answer for a URL that never went live.
  */
-const REMOVED = new Set(TERMS.filter((t) => t.status === 'removed').map((t) => `/${t.slug}`));
+const REMOVED = new Set(TERMS.filter((t) => t.status === 'removed').map((t) => t.slug));
 
 export function middleware(request) {
 	const { pathname } = request.nextUrl;
 	const path = pathname.toLowerCase().replace(/\/+$/, '');
-	if (REMOVED.has(path)) {
+	// The category is always the last path segment (/{cat}, /{country}/{cat},
+	// /{country}/{state}/{cat}, /{country}/{state}/{city}/{cat}), so a removed term's geo
+	// pages redirect too - Zirkonoxid Händler had ~225 of them (Carolin, 23 Sep: remove).
+	const last = decodeURIComponent(path.split('/').pop() || '');
+	if (REMOVED.has(last)) {
 		return NextResponse.redirect(new URL('/', request.url), 308);
 	}
 	// 17 Sep: the questions hub moved from /ki-fragen to /fragen-antworten.

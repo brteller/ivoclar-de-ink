@@ -73,6 +73,7 @@ export default function LeadCaptureForm({ lang = 'de' }) {
     discheight: '',
     shade: '',
     opaqueliquid: '',
+    depot: '',
     firstname: '',
     lastname: '',
     company: '',
@@ -192,8 +193,11 @@ export default function LeadCaptureForm({ lang = 'de' }) {
             {t('PRIVACY_NOTE_POST')}
           </p>
 
-          {/* Ivoclar feedback 2026-09 slide 6: the three order-specification boxes. */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Ivoclar feedback 2026-09 slide 6: the three order-specification boxes.
+              Lena 30 Sep: a free-text "Dental Depot/Vertragshändler inkl. Ort (zur Abrechnung)"
+              field sits to the right of the Opaque Liquid question (no drop-down). md:items-end
+              keeps the two inputs level when one label wraps to a second line. */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:items-end">
             <Field label={t('Desired disc height')} required>
               <select name="discheight" value={formData.discheight} onChange={handleFormChange} required className={inputClass}>
                 <option value="">{t('Please select')}</option>
@@ -213,7 +217,6 @@ export default function LeadCaptureForm({ lang = 'de' }) {
             <Field
               label={t('I would like to order the Opaque Liquid for €46.20 instead of €66.00 as well')}
               required
-              className="md:col-span-2"
             >
               <select name="opaqueliquid" value={formData.opaqueliquid} onChange={handleFormChange} required className={inputClass}>
                 <option value="">{t('Please select')}</option>
@@ -221,6 +224,10 @@ export default function LeadCaptureForm({ lang = 'de' }) {
                   <option key={opt.value} value={opt.value}>{t(opt.label)}</option>
                 ))}
               </select>
+            </Field>
+
+            <Field label={t('Dental depot / authorised dealer incl. city (for billing)')} required>
+              <input type="text" name="depot" value={formData.depot} onChange={handleFormChange} required className={inputClass} />
             </Field>
           </div>
 
