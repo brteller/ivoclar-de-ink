@@ -93,6 +93,11 @@ export default function LeadCaptureForm({ lang = 'de' }) {
     utm_term: '',
     utm_id: '',
     utm_content: '',
+    // Attribution (agreed with Lena and Sophie, 8 Oct): every submission from these pages is
+    // marked as a ColdStart lead and carries the page it came from, so the Salesforce
+    // campaign can tell ColdStart leads apart from the original Ivoclar form.
+    lead_source: 'ColdStart',
+    page_url: '',
   });
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -109,6 +114,10 @@ export default function LeadCaptureForm({ lang = 'de' }) {
       utm_source: params.get('utm_source') ?? '',
       utm_medium: params.get('utm_medium') ?? '',
       utm_campaign: params.get('utm_campaign') ?? '',
+      utm_term: params.get('utm_term') ?? '',
+      utm_id: params.get('utm_id') ?? '',
+      utm_content: params.get('utm_content') ?? '',
+      page_url: `${window.location.origin}${window.location.pathname}`,
     }));
   }, []);
 
@@ -180,6 +189,8 @@ export default function LeadCaptureForm({ lang = 'de' }) {
           <input type="hidden" name="utm_source" value={formData.utm_source} />
           <input type="hidden" name="utm_medium" value={formData.utm_medium} />
           <input type="hidden" name="utm_campaign" value={formData.utm_campaign} />
+          <input type="hidden" name="lead_source" value={formData.lead_source} />
+          <input type="hidden" name="page_url" value={formData.page_url} />
           <p className="text-sm text-gray-700">
             {t('We process your personal data for your participation in this campaign and in order to send you a survey.')}{' '}
             <a

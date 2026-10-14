@@ -1,7 +1,29 @@
 const CONTACT_WEBHOOK = process.env.CONTACT_WEBHOOK_URL;
 const SALESFORCE_WEBHOOK = process.env.SALESFORCE_WEBHOOK_URL;
-const PARDOT_FORM_ACTION =
-  process.env.PARDOT_FORM_ACTION || 'https://campaign.ivoclar.com/l/794073/2025-04-07/489ns7';
+// Ivoclar Germany's Salesforce/Pimcore form handler (the form-action link Sophie Mosner
+// provides). Deliberately NO default: the previous fallback was the US Pardot handler, which
+// would have routed German leads into the US campaign. Until FORM_ACTION_URL is set,
+// submissions return 503 so a test submission makes the gap obvious before launch.
+// PARDOT_FORM_ACTION is still read for backwards compatibility.
+const FORM_ACTION_URL = process.env.FORM_ACTION_URL || process.env.PARDOT_FORM_ACTION || '';
+
+// Optional JSON map from our field names to the names the Ivoclar DE form handler expects,
+// e.g. {"firstname":"first_name","zip":"postal_code"}. Unmapped fields are sent as-is.
+function parseFieldMap() {
+  const raw = process.env.FORM_FIELD_MAP;
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch (err) {
+    console.error('FORM_FIELD_MAP is not valid JSON; sending field names unmapped.');
+    return {};
+  }
+}
+const FORM_FIELD_MAP = parseFieldMap();
+
+// Attribution agreed on the 8 Oct call: every lead from these pages is flagged as ColdStart.
+const LEAD_SOURCE = process.env.LEAD_SOURCE_VALUE || 'ColdStart';
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 const RECAPTCHA_MIN_SCORE = parseFloat(process.env.RECAPTCHA_MIN_SCORE || '0.5');
 const RECAPTCHA_EXPECTED_ACTION = process.env.RECAPTCHA_EXPECTED_ACTION || 'lead_capture';
@@ -78,7 +100,15 @@ function buildFormEncodedBody(formData) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { recaptchaToken, ...formData } = body || {};
+    const { recaptchaToken, ...submitted } = body || {};
+
+    // Attribution is stamped server-side so it is present even if the client field is missing.
+    const referer = request.headers.get('referer') || '';
+    const formData = {
+      ...submitted,
+      lead_source: LEAD_SOURCE,
+      page_url: submitted.page_url || referer.split('?')[0] || '',
+    };
 
     const remoteIp =
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
@@ -94,11 +124,22 @@ export async function POST(request) {
       );
     }
 
-    // Forward to Pardot (which syncs to Salesforce) as form-urlencoded.
-    if (PARDOT_FORM_ACTION) {
+    if (!FORM_ACTION_URL && !CONTACT_WEBHOOK && !SALESFORCE_WEBHOOK) {
+      console.error('No lead destination configured: set FORM_ACTION_URL to the Ivoclar DE form handler.');
+      return new Response(
+        JSON.stringify({ ok: false, error: 'form-endpoint-not-configured' }),
+        { status: 503, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+
+    // Forward to the Ivoclar DE form handler (Salesforce/Pimcore) as form-urlencoded.
+    if (FORM_ACTION_URL) {
       try {
-        const pardotBody = buildFormEncodedBody(formData);
-        const pardotRes = await fetch(PARDOT_FORM_ACTION, {
+        const mapped = Object.fromEntries(
+          Object.entries(formData).map(([key, value]) => [FORM_FIELD_MAP[key] || key, value]),
+        );
+        const pardotBody = buildFormEncodedBody(mapped);
+        const pardotRes = await fetch(FORM_ACTION_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: pardotBody.toString(),

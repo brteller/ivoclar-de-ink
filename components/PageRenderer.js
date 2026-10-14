@@ -19,6 +19,9 @@ import CompareSection from '@/components/CompareSection';
 import IndicationSection from '@/components/IndicationSection';
 import { geoContext, geoCopy, geoNavigationItems } from '@/lib/geo';
 
+/** Ivoclar itself, for structured data: the company's official site is ivoclar.com, not this domain. */
+const IVOCLAR_ORG = { "@type": "Organization", "name": "Ivoclar", "url": "https://www.ivoclar.com" };
+
 /**
  * Per-category hero treatment (Lena, 10 Sep 2026: "if somebody is looking for this and
  * this, then we push out different pictures"). `default` keeps the Ivoclar banner video;
@@ -772,6 +775,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null, la
 						"@type": "Product",
 						"name": "IPS e.max Zirconia",
 						"brand": { "@type": "Brand", "name": "Ivoclar" },
+						"manufacturer": IVOCLAR_ORG,
 						"description": term.seoDescription || CREATOR.description,
 						"url": `${origin || ''}/${term.slug}`,
 					},
@@ -779,12 +783,24 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null, la
 			};
 		}
 		if (isHomePage) {
+			// 13 Oct (Lena): this used to be an "Organization" named "IPS e.max Zirconia by
+			// Ivoclar" with this domain as its url, which is what led Google's AI answer to call
+			// ivoclargermany.com "the official website of Ivoclar". It is a product site: a
+			// WebSite about IPS e.max Zirconia, made by Ivoclar, whose own site is ivoclar.com.
+			const siteUrl = origin || (typeof window !== 'undefined' ? window.location.origin : '');
 			return {
 				"@context": "https://schema.org",
-				"@type": "Organization",
+				"@type": "WebSite",
 				"name": CREATOR.siteName,
 				"description": CREATOR.description,
-				"url": origin || (typeof window !== 'undefined' ? window.location.origin : '')
+				"url": siteUrl,
+				"inLanguage": "de-DE",
+				"about": {
+					"@type": "Product",
+					"name": "IPS e.max Zirconia",
+					"brand": { "@type": "Brand", "name": "Ivoclar" },
+					"manufacturer": IVOCLAR_ORG,
+				},
 			};
 		}
 		
@@ -805,11 +821,7 @@ const PageRenderer = ({ htmlContent, pathname = '', origin = '', term = null, la
 			"name": seoContent.title,
 			"description": seoContent.description,
 			...(breadcrumb ? { "breadcrumb": breadcrumb } : {}),
-			"provider": {
-				"@type": "Organization",
-				"name": CREATOR.name,
-				"url": origin || (typeof window !== 'undefined' ? window.location.origin : '')
-			},
+			"provider": IVOCLAR_ORG,
 			"areaServed": {}
 		};
 

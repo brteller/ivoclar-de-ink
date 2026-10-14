@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { TERMS } from '@/lib/terms';
+import { isKnownPath, germanRedirectTarget } from '@/lib/routes';
 
 /**
  * Terms Lena and Carolin removed on the 10 Sep 2026 review (see lib/terms.js) redirect to
@@ -22,6 +23,12 @@ export function middleware(request) {
 	// 17 Sep: the questions hub moved from /ki-fragen to /fragen-antworten.
 	if (path === '/ki-fragen') {
 		return NextResponse.redirect(new URL('/fragen-antworten', request.url), 308);
+	}
+	// 13-14 Oct (Lena, Brandon): unknown URLs - the Tetric/US-era slugs Google picked up,
+	// public/index.html (the old Tetric CRA shell) - redirect to their German equivalent
+	// instead of rendering the home page with a 200 under an English slug title.
+	if (!isKnownPath(pathname)) {
+		return NextResponse.redirect(new URL(germanRedirectTarget(pathname), request.url), 308);
 	}
 	return NextResponse.next();
 }
