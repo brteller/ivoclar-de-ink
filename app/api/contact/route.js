@@ -1,23 +1,35 @@
 const CONTACT_WEBHOOK = process.env.CONTACT_WEBHOOK_URL;
 const SALESFORCE_WEBHOOK = process.env.SALESFORCE_WEBHOOK_URL;
-// Ivoclar Germany's Salesforce/Pimcore form handler (the form-action link Sophie Mosner
-// provides). Deliberately NO default: the previous fallback was the US Pardot handler, which
-// would have routed German leads into the US campaign. Until FORM_ACTION_URL is set,
-// submissions return 503 so a test submission makes the gap obvious before launch.
-// PARDOT_FORM_ACTION is still read for backwards compatibility.
-const FORM_ACTION_URL = process.env.FORM_ACTION_URL || process.env.PARDOT_FORM_ACTION || '';
+// Ivoclar Germany's Pardot form handler (Sophie Mosner, 13 Oct 2026). It is the same handler
+// behind Ivoclar's own offer form, so it is the default; FORM_ACTION_URL / PARDOT_FORM_ACTION
+// still override it. (Never fall back to the US handler: German leads would land in the US campaign.)
+const DEFAULT_FORM_ACTION_URL = 'https://campaign.ivoclar.com/l/794073/2026-10-12/4bsjwj';
+const FORM_ACTION_URL =
+  process.env.FORM_ACTION_URL || process.env.PARDOT_FORM_ACTION || DEFAULT_FORM_ACTION_URL;
 
-// Optional JSON map from our field names to the names the Ivoclar DE form handler expects,
-// e.g. {"firstname":"first_name","zip":"postal_code"}. Unmapped fields are sent as-is.
+// Our field names -> the names Ivoclar's DE offer form posts to that handler (read from
+// ivoclar.com/de_de/ips-emax-zirconia-neukundenangebot-lp on 10 Nov 2026). Fields that already
+// match (firstname, lastname, email, city, country, privacy, doubleoptin, utm_*) are sent as-is.
+const DEFAULT_FIELD_MAP = {
+  discheight: 'schreibhoehe',
+  shade: 'farbe',
+  depot: 'dentaldepot',
+  jobtitle: 'industry',
+  company: 'companyname',
+  address: 'Adress',
+  zip: 'zipcode',
+};
+
+// Optional FORM_FIELD_MAP (JSON) adds to or overrides the defaults, e.g. {"zip":"postal_code"}.
 function parseFieldMap() {
   const raw = process.env.FORM_FIELD_MAP;
-  if (!raw) return {};
+  if (!raw) return { ...DEFAULT_FIELD_MAP };
   try {
     const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? parsed : {};
+    return { ...DEFAULT_FIELD_MAP, ...(parsed && typeof parsed === 'object' ? parsed : {}) };
   } catch (err) {
-    console.error('FORM_FIELD_MAP is not valid JSON; sending field names unmapped.');
-    return {};
+    console.error('FORM_FIELD_MAP is not valid JSON; using the default field map.');
+    return { ...DEFAULT_FIELD_MAP };
   }
 }
 const FORM_FIELD_MAP = parseFieldMap();

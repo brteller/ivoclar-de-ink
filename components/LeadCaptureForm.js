@@ -24,15 +24,22 @@ import Script from 'next/script';
  * Salesforce, so only the visible labels are localised.
  */
 
+/**
+ * Company type, sent as `industry`. Codes match Ivoclar DE's own offer form
+ * (ivoclar.com/de_de/ips-emax-zirconia-neukundenangebot-lp), which feeds the same Pardot
+ * handler. Our earlier 01-05 list sent "Dental Laboratory" as 01, which Ivoclar reads as Händler.
+ */
 const JOB_TITLE_OPTIONS = [
-  { value: '01', label: 'Dental Laboratory' },
-  { value: '02', label: 'Practice Laboratory' },
   { value: '03', label: 'Dental Practice' },
-  { value: '04', label: 'Milling Centre' },
-  { value: '05', label: 'Other' },
+  { value: '04', label: 'Dental practice with laboratory' },
+  { value: '08', label: 'Laboratory' },
+  { value: '01', label: 'Dealer' },
+  { value: '14', label: 'Student / master craftsman student' },
+  { value: '09', label: 'Other' },
 ];
 
-const COUNTRY_OPTIONS = ['Germany', 'Austria'];
+/** Same values as Ivoclar DE's form, which now includes Switzerland. */
+const COUNTRY_OPTIONS = ['Germany', 'Austria', 'Switzerland'];
 
 /**
  * Ivoclar feedback 2026-09 slide 6, box 1: "Gewünschte Scheibenhöhe".
@@ -225,11 +232,10 @@ export default function LeadCaptureForm({ lang = 'de' }) {
               </select>
             </Field>
 
-            <Field
-              label={t('I would like to order the Opaque Liquid for €46.20 instead of €66.00 as well')}
-              required
-            >
-              <select name="opaqueliquid" value={formData.opaqueliquid} onChange={handleFormChange} required className={inputClass}>
+            {/* Optional since 10 Nov 2026: Ivoclar DE's current form (same Pardot handler) has no
+                Opaque Liquid field, so a required answer here could block orders for nothing. */}
+            <Field label={t('I would like to order the Opaque Liquid for €46.20 instead of €66.00 as well')}>
+              <select name="opaqueliquid" value={formData.opaqueliquid} onChange={handleFormChange} className={inputClass}>
                 <option value="">{t('Please select')}</option>
                 {OPAQUE_LIQUID_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>{t(opt.label)}</option>

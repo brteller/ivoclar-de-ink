@@ -1,59 +1,33 @@
 import Link from 'next/link';
 
+// German only, like the rest of ivoclargermany.com (the old page was an English ColdStart template).
 export const metadata = {
-  title: 'Thank You',
-  description: "Thank you for your message. We'll be in touch soon.",
+  title: 'Vielen Dank | IPS e.max Zirconia',
+  description: 'Vielen Dank für Ihre Bestellung von IPS e.max Zirconia.',
   robots: 'noindex, nofollow',
 };
 
 export default function ThankYouPage() {
   return (
-    <div className="min-h-screen py-10 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center px-4">
-      <div className="max-w-2xl w-full">
-        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-center">
-          <div className="mb-6">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-100 mb-4">
-              <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-black mb-4">Thank You!</h1>
-          <p className="text-xl text-gray-700 mb-8">
-            We&apos;ve received your message and will get back to you within 24 hours.
-          </p>
-          <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 mb-8 text-left">
-            <h2 className="text-lg font-bold text-black mb-4 text-center">What happens next?</h2>
-            <ul className="space-y-3 text-gray-700">
-              <li className="flex items-start gap-3">
-                <svg className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>A specialist will review your inquiry</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <svg className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>We&apos;ll reach out to schedule a discovery call</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <svg className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>Discuss how we can scale your visibility</span>
-              </li>
-            </ul>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/"
-              className="inline-block bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-blue-500/25 transform hover:scale-105 text-center"
-            >
-              Back to Home
-            </Link>
-          </div>
+    <div className="min-h-[70vh] py-16 bg-white flex items-center justify-center px-4">
+      <div className="max-w-2xl w-full text-center">
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#0a478b]/10 mb-6">
+          <svg className="w-10 h-10 text-[#0a478b]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
         </div>
+        <h1 className="text-3xl md:text-4xl font-normal text-[#0a478b] mb-4 tracking-tight">
+          Vielen Dank für Ihre Bestellung!
+        </h1>
+        <p className="text-lg text-gray-700 mb-10">
+          Wir haben Ihre Angaben erhalten und melden uns in Kürze bei Ihnen.
+        </p>
+        <Link
+          href="/"
+          className="inline-block bg-[#0a478b] hover:bg-[#083a70] text-white font-bold px-8 py-4 rounded-lg transition-colors"
+        >
+          Zurück zur Startseite
+        </Link>
       </div>
     </div>
   );
